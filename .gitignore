@@ -2,3 +2,5 @@
 notify.env
 /vendor/
 /.idea
+/postgres-data
+/.cargo
