@@ -50,15 +50,13 @@ pub struct Notifier {
 async fn main() -> Result<(), NotifyError> {
     let mut notifier = get_notifier().await?;
 
-    let mut set = mail::get_providers_from_mail(&mut notifier).await?;
-    let mut scraped_set = scraping::get_providers_from_scraping(&mut notifier).await?;
+    let set = mail::get_providers_from_mail(&mut notifier).await?;
+    let scraped_set = scraping::get_providers_from_scraping(&mut notifier).await?;
 
-    for provider in set {
-        provider.process_provider(&mut notifier).await?;
-    }
-
-    for provider in dbg!(scraped_set) {
-        provider.process_provider(&mut notifier).await?;
+    for provider in set.iter().chain(scraped_set.iter()) {
+        if let Err(e) = provider.process_provider(&mut notifier).await {
+            eprintln!("Error: {}", e);
+        }
     }
 
     write_config(&mut notifier).await?;
