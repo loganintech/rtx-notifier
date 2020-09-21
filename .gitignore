@@ -1,5 +1,4 @@
 /target
-notify.env
 /vendor/
 /.idea
 /postgres-data
