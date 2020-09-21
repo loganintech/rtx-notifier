@@ -1,6 +1,5 @@
 #![feature(async_closure)]
 
-use std::collections::HashSet;
 use std::net::TcpStream;
 
 use chrono::{DateTime, Local};
@@ -10,7 +9,6 @@ use serde::{Deserialize, Serialize};
 
 use config::*;
 use error::NotifyError;
-use provider::ProviderType;
 
 mod config;
 mod error;
@@ -30,6 +28,7 @@ pub struct ProjectConfig {
     imap_password: String,
     imap_host: String,
     from_phone_number: String,
+    last_notification_sent: DateTime<Local>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -53,9 +52,14 @@ async fn main() -> Result<(), NotifyError> {
     let set = mail::get_providers_from_mail(&mut notifier).await?;
     let scraped_set = scraping::get_providers_from_scraping(&mut notifier).await?;
 
-    for provider in set.iter().chain(scraped_set.iter()) {
-        if let Err(e) = provider.process_provider(&mut notifier).await {
-            eprintln!("Error: {}", e);
+    if notifier.config.last_notification_sent < (Local::now() - (chrono::Duration::minutes(5))) {
+        // Only send a message if we haven't sent one in the last 5 minutes
+        for provider in set.iter().chain(scraped_set.iter()) {
+            if let Err(e) = provider.process_provider(&mut notifier).await {
+                eprintln!("Error: {}", e);
+            } else {
+                notifier.config.last_notification_sent = Local::now();
+            }
         }
     }
 

@@ -2,16 +2,17 @@ CREATE DATABASE projectnotifier;
 
 CREATE TABLE config
 (
-    id                SERIAL PRIMARY KEY NOT NULL UNIQUE,
-    last_seen_evga    TIMESTAMPTZ        NOT NULL,
-    last_seen_newegg  TIMESTAMPTZ        NOT NULL,
-    last_seen_asus    TIMESTAMPTZ        NOT NULL,
-    twilio_auth_token TEXT               NOT NULL,
-    twilio_account_id TEXT               NOT NULL,
-    imap_username     TEXT               NOT NULL,
-    imap_password     TEXT               NOT NULL,
-    imap_host         TEXT               NOT NULL,
-    from_phone_number TEXT               NOT NULL
+    id                     SERIAL PRIMARY KEY NOT NULL UNIQUE,
+    last_seen_evga         TIMESTAMPTZ        NOT NULL,
+    last_seen_newegg       TIMESTAMPTZ        NOT NULL,
+    last_seen_asus         TIMESTAMPTZ        NOT NULL,
+    last_notification_sent TIMESTAMPTZ        NOT NULL,
+    twilio_auth_token      TEXT               NOT NULL,
+    twilio_account_id      TEXT               NOT NULL,
+    imap_username          TEXT               NOT NULL,
+    imap_password          TEXT               NOT NULL,
+    imap_host              TEXT               NOT NULL,
+    from_phone_number      TEXT               NOT NULL
 );
 
 CREATE TABLE subscriber

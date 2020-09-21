@@ -94,7 +94,6 @@ impl ProviderType {
             }
             ProviderType::NewEgg(NeweggProduct::Unknown) => format!("NewEgg has new products!"),
             ProviderType::FE(name, page) => format!("Nvidia has {} for sale at {}!", name, page),
-            _ => unreachable!(),
         }
     }
 }

@@ -2,11 +2,6 @@ use crate::error::NotifyError;
 use crate::provider::{NeweggProduct, ProviderType};
 use crate::scraping::ProductPage;
 
-use select::document::Document;
-use select::predicate::{Class, Name, Predicate};
-
-use std::io::Read;
-
 use lazy_static::lazy_static;
 use regex::Regex;
 

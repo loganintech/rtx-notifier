@@ -48,7 +48,8 @@ pub async fn get_notifier() -> Result<Notifier, NotifyError> {
          imap_username, \
          imap_password, \
          imap_host, \
-         from_phone_number \
+         from_phone_number, \
+         last_notification_sent \
          FROM config ORDER BY id DESC LIMIT 1",
             &[],
         )
@@ -68,6 +69,7 @@ pub async fn get_notifier() -> Result<Notifier, NotifyError> {
             imap_password: row.get(7),
             imap_host: row.get(8),
             from_phone_number: row.get(9),
+            last_notification_sent: row.get(10),
         });
     }
 
@@ -100,8 +102,9 @@ pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {
                  imap_username = $6,\
                  imap_password = $7,\
                  imap_host = $8,\
-                 from_phone_number = $9\
-             WHERE id = $10",
+                 from_phone_number = $9,\
+                 last_notification_sent = $10\
+             WHERE id = $11",
             &[
                 &notifier.config.last_seen_evga,
                 &notifier.config.last_seen_newegg,
@@ -112,6 +115,7 @@ pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {
                 &notifier.config.imap_password,
                 &notifier.config.imap_host,
                 &notifier.config.from_phone_number,
+                &notifier.config.last_notification_sent,
                 &notifier.config.id,
             ],
         )
