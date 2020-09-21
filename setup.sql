@@ -32,3 +32,9 @@ INSERT INTO config (id, last_seen_evga, last_seen_newegg, last_seen_asus, twilio
 values (1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,
         '44b4d93e7a75c8cf7f523d0bb6b845da', 'AC5061e0a7990f09c8d6a6bf644efcc7c7', 'hookintopython', 'xf2JYTt6OIMm',
         'imap.gmail.com', '+17792446755');
+
+INSERT INTO subscriber (id, service, to_phone_number)
+VALUES (2, 'newegg', '+14088333405'),
+       (1, 'evga', '+14088333405'),
+       (3, 'evgaa', '+18054594801'),
+       (4, 'newegga', '+18054594801');

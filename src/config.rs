@@ -24,7 +24,7 @@ pub fn get_imap(
 
 pub async fn get_notifier() -> Result<Notifier, NotifyError> {
     let (client, con) = tokio_postgres::connect(
-        "host=localhost user=postgres dbname=projectnotifier password=projectnotifpass sslmode=disable",
+        "host=localhost user=postgres dbname=projectnotifier password=projectnotifpass sslmode=disable port=5433",
         NoTls,
     )
         .await
