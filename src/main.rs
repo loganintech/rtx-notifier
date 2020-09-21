@@ -1,3 +1,5 @@
+#![feature(async_closure)]
+
 use std::collections::HashSet;
 use std::net::TcpStream;
 
@@ -13,6 +15,8 @@ use provider::ProviderType;
 mod error;
 mod config;
 mod provider;
+mod mail;
+mod scraping;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ProjectConfig {
@@ -47,48 +51,17 @@ pub struct Notifier {
 async fn main() -> Result<(), NotifyError> {
     let mut notifier = get_notifier().await?;
 
-    let mailbox = notifier
-        .imap
-        .select("INBOX")
-        .map_err(|_| NotifyError::MailboxLoad)?;
-
-    let selected = (mailbox.exists - 10..mailbox.exists)
-        .map(|n| n.to_string())
-        .collect::<Vec<String>>()
-        .join(",");
-
-    let messages = notifier
-        .imap
-        .fetch(
-            selected,
-            "(ENVELOPE BODY[] FLAGS INTERNALDATE BODY[HEADER])",
-        )
-        .map_err(|_| NotifyError::EmailFetch)?;
-
-
-    let set = messages.into_iter().filter_map(|f| {
-        let body = f.envelope()?;
-        let subject = body.subject?;
-        let subject = String::from_utf8(subject.to_vec()).ok()?;
-        let subject = subject.to_ascii_lowercase();
-        let date = f.internal_date()?;
-        if subject.contains("evga") && date > notifier.config.last_seen_evga {
-            notifier.config.last_seen_evga = Local::now();
-            Some(ProviderType::Evga)
-        } else if subject.contains("newegg") && date > notifier.config.last_seen_newegg {
-            notifier.config.last_seen_newegg = Local::now();
-            Some(ProviderType::NewEgg)
-        } else if subject.contains("asus") && date > notifier.config.last_seen_asus {
-            notifier.config.last_seen_asus = Local::now();
-            Some(ProviderType::Asus)
-        } else { None }
-    }).collect::<HashSet<ProviderType>>();
-
-    write_config(&mut notifier).await?;
+    let mut set = mail::get_providers_from_mail(&mut notifier).await?;
+    let mut scraped_set = scraping::get_providers_from_scraping(&mut notifier).await?;
 
     for provider in set {
         provider.process_provider(&mut notifier).await?;
     }
 
+    for provider in dbg!(scraped_set) {
+        provider.process_provider(&mut notifier).await?;
+    }
+
+    write_config(&mut notifier).await?;
     Ok(())
 }

@@ -2,19 +2,32 @@ use crate::{Notifier, Subscriber};
 use crate::error::NotifyError;
 use twilio::OutboundMessage;
 
-#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
+
+#[derive(Eq, PartialEq, Clone, Hash, Debug)]
+pub enum EvgaProduct {
+    Known(String, String),
+    Unknown,
+}
+
+#[derive(Eq, PartialEq, Clone, Hash, Debug)]
+pub enum NeweggProduct {
+    Known(String, String),
+    Unknown,
+}
+
+#[derive(Eq, PartialEq, Clone, Hash, Debug)]
 pub enum ProviderType {
-    Evga,
-    Asus,
-    NewEgg,
+    Evga(EvgaProduct),
+    NewEgg(NeweggProduct),
+    FE(String, String),
 }
 
 impl ProviderType {
     pub async fn process_provider(&self, notifier: &mut Notifier) -> Result<(), NotifyError> {
-        let provider: &'static str = self.into();
+        let provider: &'static str = self.to_key();
         let rows = notifier
             .db
-            .query("SELECT * FROM subscriber WHERE service = $1", &[&provider])
+            .query("SELECT * FROM subscriber WHERE service = $1 AND active = true", &[&provider])
             .await
             .map_err(|_| NotifyError::DBSubscriberSelect)?;
 
@@ -26,13 +39,13 @@ impl ProviderType {
             .map_err(|e| NotifyError::SubscriberFromRows(e))?;
 
         for subscriber in subscribers {
-            let message = format!("{} has new stock!", provider.to_ascii_uppercase());
+            let message = self.new_stock_message();
             notifier
                 .twilio
                 .send_message(OutboundMessage::new(
                     &notifier.config.from_phone_number,
                     &subscriber.to_phone_number,
-                    &message
+                    &message,
                 ))
                 .await
                 .map_err(|e| NotifyError::TwilioSend(e))?;
@@ -44,13 +57,35 @@ impl ProviderType {
     }
 }
 
-impl From<&ProviderType> for &'static str {
-    fn from(provider: &ProviderType) -> &'static str {
+impl ProviderType {
+    fn to_key(&self) -> &'static str {
         use ProviderType::*;
-        match provider {
-            Evga => {"evga"},
-            Asus => {"asus"},
-            NewEgg => {"newegg"},
+        match self {
+            Evga(_) => { "evga" }
+            NewEgg(_) => { "newegg" }
+            FE(_, _) => { "nvidia" }
+        }
+    }
+
+    pub fn from_product(key: &str, name: String, page: String) -> Option<Self> {
+        match key {
+            "evgartx" => Some(ProviderType::Evga(EvgaProduct::Known(name, page))),
+            "evga"   => Some(ProviderType::Evga(EvgaProduct::Unknown)),
+            "neweggrtx" => Some(ProviderType::NewEgg(NeweggProduct::Known(name, page))),
+            "newegg" => Some(ProviderType::NewEgg(NeweggProduct::Unknown)),
+            "nvidia" => Some(ProviderType::FE(name, page)),
+            _ => None,
+        }
+    }
+
+    fn new_stock_message(&self) -> String {
+        match self {
+            ProviderType::Evga(EvgaProduct::Known(name, page)) => format!("EVGA has new {} for sale at {}!", name, page),
+            ProviderType::Evga(EvgaProduct::Unknown) => format!("EVGA has new products!"),
+            ProviderType::NewEgg(NeweggProduct::Known(name, page)) => format!("NewEgg has new {} for sale at {}", name, page),
+            ProviderType::NewEgg(NeweggProduct::Unknown) => format!("NewEgg has new products!"),
+            ProviderType::FE(name, page) => format!("Nvidia has {} for sale at {}!", name, page),
+            _ => unreachable!()
         }
     }
 }
