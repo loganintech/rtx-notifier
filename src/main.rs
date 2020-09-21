@@ -12,10 +12,10 @@ use config::*;
 use error::NotifyError;
 use provider::ProviderType;
 
-mod error;
 mod config;
-mod provider;
+mod error;
 mod mail;
+mod provider;
 mod scraping;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -45,7 +45,6 @@ pub struct Notifier {
     pub imap: imap::Session<TlsStream<TcpStream>>,
     pub config: ProjectConfig,
 }
-
 
 #[tokio::main]
 async fn main() -> Result<(), NotifyError> {

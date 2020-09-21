@@ -15,7 +15,8 @@ pub fn get_imap(
         .build()
         .map_err(|_| NotifyError::TlsCreation)?;
 
-    let client = imap::connect((host, 993), host, &tls).map_err(|e| NotifyError::ImapConnection(e))?;
+    let client =
+        imap::connect((host, 993), host, &tls).map_err(|e| NotifyError::ImapConnection(e))?;
 
     client
         .login(username, password)
@@ -38,7 +39,7 @@ pub async fn get_notifier() -> Result<Notifier, NotifyError> {
 
     let config_rows = client
         .query(
-        "SELECT id, \
+            "SELECT id, \
          last_seen_evga, \
          last_seen_newegg, \
          last_seen_asus, \
@@ -49,7 +50,7 @@ pub async fn get_notifier() -> Result<Notifier, NotifyError> {
          imap_host, \
          from_phone_number \
          FROM config ORDER BY id DESC LIMIT 1",
-         &[],
+            &[],
         )
         .await
         .map_err(|e| NotifyError::DBConfigSelect(e))?;

@@ -1,12 +1,14 @@
 use crate::error::NotifyError;
-use crate::provider::{ProviderType, EvgaProduct, NeweggProduct};
+use crate::provider::{EvgaProduct, NeweggProduct, ProviderType};
 use crate::Notifier;
 
 use chrono::Local;
 
 use std::collections::HashSet;
 
-pub async fn get_providers_from_mail(notifier: &mut Notifier) -> Result<HashSet<ProviderType>, NotifyError> {
+pub async fn get_providers_from_mail(
+    notifier: &mut Notifier,
+) -> Result<HashSet<ProviderType>, NotifyError> {
     let mailbox = notifier
         .imap
         .select("INBOX")
@@ -25,21 +27,25 @@ pub async fn get_providers_from_mail(notifier: &mut Notifier) -> Result<HashSet<
         )
         .map_err(|_| NotifyError::EmailFetch)?;
 
-
-    let set = messages.into_iter().filter_map(|f| {
-        let body = f.envelope()?;
-        let subject = body.subject?;
-        let subject = String::from_utf8(subject.to_vec()).ok()?;
-        let subject = subject.to_ascii_lowercase();
-        let date = f.internal_date()?;
-        if subject.contains("evga") && date > notifier.config.last_seen_evga {
-            notifier.config.last_seen_evga = Local::now();
-            Some(ProviderType::Evga(EvgaProduct::Unknown))
-        } else if subject.contains("newegg") && date > notifier.config.last_seen_newegg {
-            notifier.config.last_seen_newegg = Local::now();
-            Some(ProviderType::NewEgg(NeweggProduct::Unknown))
-        } else { None }
-    }).collect::<HashSet<ProviderType>>();
+    let set = messages
+        .into_iter()
+        .filter_map(|f| {
+            let body = f.envelope()?;
+            let subject = body.subject?;
+            let subject = String::from_utf8(subject.to_vec()).ok()?;
+            let subject = subject.to_ascii_lowercase();
+            let date = f.internal_date()?;
+            if subject.contains("evga") && date > notifier.config.last_seen_evga {
+                notifier.config.last_seen_evga = Local::now();
+                Some(ProviderType::Evga(EvgaProduct::Unknown))
+            } else if subject.contains("newegg") && date > notifier.config.last_seen_newegg {
+                notifier.config.last_seen_newegg = Local::now();
+                Some(ProviderType::NewEgg(NeweggProduct::Unknown))
+            } else {
+                None
+            }
+        })
+        .collect::<HashSet<ProviderType>>();
 
     Ok(set)
 }
