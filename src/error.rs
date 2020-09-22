@@ -16,6 +16,9 @@ pub enum NotifyError {
     // WebRequestFailed,
     HTMLParseFailed,
     NoProductFound,
+    CommandErr(std::io::Error),
+    CommandResult(i32),
+    NoPage,
 }
 
 impl fmt::Display for NotifyError {
@@ -34,6 +37,9 @@ impl fmt::Display for NotifyError {
             // NotifyError::WebRequestFailed => write!(f, "WebRequestFailed")?,
             NotifyError::HTMLParseFailed => write!(f, "HTMLParseFailed")?,
             NotifyError::NoProductFound => write!(f, "NoProductFound")?,
+            NotifyError::CommandErr(e) => write!(f, "CommandErr: {}", e)?,
+            NotifyError::CommandResult(e) => write!(f, "CommandResult: {}", e)?,
+            NotifyError::NoPage => write!(f, "NoPage")?,
         }
 
         write!(f, " Failed")

@@ -47,6 +47,7 @@ pub struct ApplicationConfig {
     imap_password: String,
     imap_host: String,
     from_phone_number: String,
+    should_open_browser: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
