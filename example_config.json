@@ -9,7 +9,8 @@
     "imap_username": "",
     "imap_password": "",
     "imap_host": "",
-    "from_phone_number": ""
+    "from_phone_number": "",
+    "should_open_browser": true
   },
   "subscribers": [
     {
