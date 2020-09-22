@@ -78,6 +78,7 @@ impl ProviderType {
         match self {
             ProviderType::Evga(Some(Product { page, .. }))
             | ProviderType::NewEgg(Some(Product { page, .. }))
+            | ProviderType::BestBuy(Product { page, .. })
             | ProviderType::FE(_, page) => Ok(page),
             _ => Err(NotifyError::NoPage),
         }
