@@ -1,5 +1,5 @@
-mod newegg;
 mod bestbuy;
+mod newegg;
 
 use crate::error::NotifyError;
 use crate::provider::ProviderType;
@@ -48,7 +48,6 @@ pub async fn get_providers_from_scraping(
         }
     }
 
-
     Ok(providers.into_iter().collect::<HashSet<ProviderType>>())
 }
 
@@ -62,8 +61,8 @@ pub async fn default_availability(provider: &ProductPage) -> Result<ProviderType
 
     let document = Html::parse_document(&resp);
 
-    let selector =
-        Selector::parse(&provider.css_selector.clone().unwrap_or("".to_string())).map_err(|_| NotifyError::HTMLParseFailed)?;
+    let selector = Selector::parse(&provider.css_selector.clone().unwrap_or("".to_string()))
+        .map_err(|_| NotifyError::HTMLParseFailed)?;
     let mut selected = document.select(&selector);
     let found = selected.next();
     if found.is_none()

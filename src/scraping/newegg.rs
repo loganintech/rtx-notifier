@@ -2,9 +2,9 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 use crate::error::NotifyError;
-use crate::Product;
 use crate::provider::ProviderType;
 use crate::scraping::ProductPage;
+use crate::Product;
 
 lazy_static! {
     static ref DETAIL_REGEX: Regex =

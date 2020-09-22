@@ -17,7 +17,6 @@ mod mail;
 mod provider;
 mod scraping;
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default, Hash)]
 pub struct Product {
     product: String,
@@ -83,7 +82,9 @@ async fn run_bot() -> Result<(), NotifyError> {
     let set = mail::get_providers_from_mail(&mut notifier).await?;
     let scraped_set = scraping::get_providers_from_scraping(&mut notifier).await?;
 
-    if notifier.config.application_config.last_notification_sent < (Local::now() - (chrono::Duration::minutes(5))) {
+    if notifier.config.application_config.last_notification_sent
+        < (Local::now() - (chrono::Duration::minutes(5)))
+    {
         // Only send a message if we haven't sent one in the last 5 minutes
         for provider in set.iter().chain(scraped_set.iter()) {
             if let Err(e) = provider.process_provider(&mut notifier).await {
