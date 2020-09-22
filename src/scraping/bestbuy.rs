@@ -1,26 +1,30 @@
 use lazy_static::lazy_static;
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 use reqwest::header::HeaderMap;
 
 use crate::error::NotifyError;
-use crate::provider::ProviderType;
-use crate::scraping::ProductPage;
-use crate::Product;
+use crate::product::{Product, ProductPage};
+use crate::ProductDetails;
 
+// LOok for the div that says it's Sold Out, case insensitive. Give it a bit of before and after HTML so that it doesn't false match on other elements
 lazy_static! {
-    static ref BUTTON_REGEX: Regex = Regex::new(
-        r#"<div class="fulfillment.+([Ss][Oo][Ll][Dd] [Oo][Uu][Tt])</button></div></div>"#
-    )
-    .unwrap();
+    static ref BUTTON_REGEX: Regex =
+        RegexBuilder::new(r#"<div class="fulfillment.+Sold Out</button></div></div>"#)
+            .case_insensitive(true)
+            .build()
+            .expect("Invalid regex");
 }
 
-pub async fn bestbuy_availability(provider: &ProductPage) -> Result<ProviderType, NotifyError> {
+pub async fn bestbuy_availability(provider: &ProductPage) -> Result<Product, NotifyError> {
+    // Create a new client, can't use the reqwest::get() because we need headers
     let client = reqwest::Client::new();
     let mut headers = HeaderMap::new();
-    headers.insert("Accept", "*/*".parse().unwrap());
-    headers.insert("Host", "www.bestbuy.com".parse().unwrap());
+    // Add some headers for a user agent, otherwise the host refuses connection
+    headers.insert("Accept", "*/*".parse().unwrap()); //TODO: Check if this is necessary
+    headers.insert("Host", "www.bestbuy.com".parse().unwrap()); //TODO: Check if this is necessary
     headers.insert("User-Agent", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0".parse().unwrap());
 
+    // Load the webpage
     let resp = client
         .get(&provider.page)
         .headers(headers)
@@ -33,10 +37,10 @@ pub async fn bestbuy_availability(provider: &ProductPage) -> Result<ProviderType
 
     // If we can't find the sold out button, we're back in stock
     if let None = BUTTON_REGEX.captures_iter(&resp).next() {
-        return Ok(ProviderType::BestBuy(Product {
+        return Ok(Product::BestBuy(ProductDetails {
             product: provider.product.clone(),
             page: provider.page.clone(),
-            ..Product::default()
+            ..ProductDetails::default()
         }));
     }
 

@@ -9,16 +9,16 @@ use serde::{Deserialize, Serialize};
 
 use config::*;
 use error::NotifyError;
-use scraping::ProductPage;
+use product::ProductPage;
 
 mod config;
 mod error;
 mod mail;
-mod provider;
+mod product;
 mod scraping;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default, Hash)]
-pub struct Product {
+pub struct ProductDetails {
     product: String,
     page: String,
     product_key: String,
@@ -65,6 +65,7 @@ pub struct Notifier {
 
 #[tokio::main]
 async fn main() -> Result<(), NotifyError> {
+    // Get notifier instance and settings
     let mut notifier = get_notifier().await?;
     loop {
         let start = Local::now();
@@ -72,11 +73,14 @@ async fn main() -> Result<(), NotifyError> {
             eprintln!("Error occurred: {}", e);
         }
         let end = Local::now();
+        // Get total runtime in seconds
         let runtime = (start - end).num_seconds();
 
+        // If we're not in daemon mode, break out of this loop
         if !notifier.config.application_config.daemon_mode {
             break;
         }
+        // Otherwise, delay for the rest of the 30 second cycle
         tokio::time::delay_for(std::time::Duration::from_secs(
             30u64.checked_sub(runtime as u64).unwrap_or(0),
         ))
@@ -87,8 +91,10 @@ async fn main() -> Result<(), NotifyError> {
 }
 
 async fn run_bot(notifier: &mut Notifier) -> Result<(), NotifyError> {
-    let set = mail::get_providers_from_mail(notifier).await?;
+    // Check the scraped websites
     let scraped_set = scraping::get_providers_from_scraping(notifier).await?;
+    // Check the mail providers
+    let set = mail::get_providers_from_mail(notifier).await?;
 
     // If the last time we sent a message was more recent than 30 minutes ago, don't try to send messages
     if notifier.config.application_config.last_notification_sent
@@ -96,9 +102,12 @@ async fn run_bot(notifier: &mut Notifier) -> Result<(), NotifyError> {
     {
         // Only send a message if we haven't sent one in the last 5 minutes
         for provider in set.iter().chain(scraped_set.iter()) {
-            if let Err(e) = provider.process_provider(notifier).await {
+            // If we found any providers, send the messages
+            // If it results in an error print the error
+            if let Err(e) = provider.process_found_in_stock_notification(notifier).await {
                 eprintln!("Error: {}", e);
             } else {
+                // If we don't have an error, update the last notification sent timer
                 notifier.config.application_config.last_notification_sent = Local::now();
             }
         }

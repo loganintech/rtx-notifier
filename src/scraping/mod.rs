@@ -1,37 +1,18 @@
-mod bestbuy;
-mod newegg;
-
-use crate::error::NotifyError;
-use crate::provider::ProviderType;
-use crate::Notifier;
-
-use scraper::{Html, Selector};
-use serde::{Deserialize, Serialize};
-
 use std::collections::HashSet;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ProductPage {
-    pub product_key: String,
-    pub product: String,
-    pub page: String,
-    pub css_selector: Option<String>,
-}
+use scraper::{Html, Selector};
+use serde::Serialize;
 
-impl ProductPage {
-    async fn is_available(&self) -> Result<ProviderType, NotifyError> {
-        match self.product_key.as_str() {
-            "nvidia" => Err(NotifyError::NoProductFound),
-            "newegg" | "neweggrtx" => newegg::newegg_availability(self).await,
-            "bestbuy" => bestbuy::bestbuy_availability(self).await,
-            _ => default_availability(self).await,
-        }
-    }
-}
+use crate::error::NotifyError;
+use crate::product::{Product, ProductPage};
+use crate::Notifier;
+
+pub mod bestbuy;
+pub mod newegg;
 
 pub async fn get_providers_from_scraping(
     notifier: &mut Notifier,
-) -> Result<HashSet<ProviderType>, NotifyError> {
+) -> Result<HashSet<Product>, NotifyError> {
     let mut futs = vec![];
     for page in &notifier.config.products {
         futs.push(page.is_available());
@@ -48,10 +29,10 @@ pub async fn get_providers_from_scraping(
         }
     }
 
-    Ok(providers.into_iter().collect::<HashSet<ProviderType>>())
+    Ok(providers.into_iter().collect::<HashSet<Product>>())
 }
 
-pub async fn default_availability(provider: &ProductPage) -> Result<ProviderType, NotifyError> {
+pub async fn default_availability(provider: &ProductPage) -> Result<Product, NotifyError> {
     let resp = reqwest::get(&provider.page)
         .await
         .map_err(|_| NotifyError::HTMLParseFailed)?
@@ -73,7 +54,7 @@ pub async fn default_availability(provider: &ProductPage) -> Result<ProviderType
                 .to_ascii_lowercase()
                 .contains("out of stock"))
     {
-        if let Some(provider) = ProviderType::from_product(
+        if let Some(provider) = Product::from_product(
             &provider.product_key,
             provider.product.clone(),
             provider.page.clone(),
