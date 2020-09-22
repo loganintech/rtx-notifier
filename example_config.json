@@ -1,22 +1,29 @@
 {
   "application_config": {
-    "last_seen_evga": "",
-    "last_seen_newegg": "",
-    "last_seen_asus": "",
-    "last_notification_sent": "",
-    "twilio_auth_token": "",
+    // Some default values here, these are really only used for email
+    "last_seen_evga": "2020-09-20T18:52:49.444913-07:00",
+    "last_seen_newegg": "2020-09-20T18:51:06.486222-07:00",
+    "last_seen_asus": "2020-09-19T18:43:58.644-07:00",
+    // No notifications are sent within 30 minutes of this timestamp, to prevent spam
+    "last_notification_sent": "2020-09-20T14:47:24.571591-07:00",
+    // If any of these properties are null, the twilio integration is skipped
+    "twilio_auth_token": null,
     "twilio_account_id": "",
+    "from_phone_number": "",
+    // If any of these properties are null, no attempt is made to read emails from the IMAP integration
     "imap_username": "",
     "imap_password": "",
     "imap_host": "",
-    "from_phone_number": "",
-    "should_open_browser": true
+    // These are personal choices. I recommend daemon mode if you're just running locally (it will keep running, and check for new products every 30 secnods)
+    "should_open_browser": true,
+    "daemon_mode": true
   },
   "subscribers": [
     {
       "service": [
         "evga",
-        "newegg"
+        "newegg",
+        "bestbuy"
       ],
       "to_phone_number": "+15555555555",
       "active": true

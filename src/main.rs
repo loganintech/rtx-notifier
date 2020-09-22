@@ -45,8 +45,9 @@ pub struct ApplicationConfig {
     imap_username: Option<String>,
     imap_password: Option<String>,
     imap_host: Option<String>,
-    from_phone_number: String,
+    from_phone_number: Option<String>,
     should_open_browser: bool,
+    daemon_mode: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -64,30 +65,35 @@ pub struct Notifier {
 
 #[tokio::main]
 async fn main() -> Result<(), NotifyError> {
+    let mut notifier = get_notifier().await?;
     loop {
         let start = Local::now();
-        if let Err(e) = run_bot().await {
+        if let Err(e) = run_bot(&mut notifier).await {
             eprintln!("Error occurred: {}", e);
         }
         let end = Local::now();
-        println!("Took: {}", (end - start).num_seconds());
+        let runtime = (start - end).num_seconds();
 
-        tokio::time::delay_for(std::time::Duration::from_secs(30)).await;
+        if !notifier.config.application_config.daemon_mode {
+            break;
+        }
+        tokio::time::delay_for(std::time::Duration::from_secs(30u64.checked_sub(runtime as u64).unwrap_or(0))).await;
     }
+
+    Ok(())
 }
 
-async fn run_bot() -> Result<(), NotifyError> {
-    let mut notifier = get_notifier().await?;
+async fn run_bot(notifier: &mut Notifier) -> Result<(), NotifyError> {
+    let set = mail::get_providers_from_mail(notifier).await?;
+    let scraped_set = scraping::get_providers_from_scraping(notifier).await?;
 
-    let set = mail::get_providers_from_mail(&mut notifier).await?;
-    let scraped_set = scraping::get_providers_from_scraping(&mut notifier).await?;
-
+    // If the last time we sent a message was more recent than 30 minutes ago, don't try to send messages
     if notifier.config.application_config.last_notification_sent
-        < (Local::now() - (chrono::Duration::minutes(5)))
+        < (Local::now() - chrono::Duration::minutes(30))
     {
         // Only send a message if we haven't sent one in the last 5 minutes
         for provider in set.iter().chain(scraped_set.iter()) {
-            if let Err(e) = provider.process_provider(&mut notifier).await {
+            if let Err(e) = provider.process_provider(notifier).await {
                 eprintln!("Error: {}", e);
             } else {
                 notifier.config.application_config.last_notification_sent = Local::now();
@@ -95,6 +101,7 @@ async fn run_bot() -> Result<(), NotifyError> {
         }
     }
 
-    write_config(&mut notifier).await?;
+    // Once we've run through re-write our config
+    write_config(notifier).await?;
     Ok(())
 }

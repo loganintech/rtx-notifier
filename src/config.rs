@@ -38,7 +38,8 @@ pub async fn get_notifier() -> Result<Notifier, NotifyError> {
 
     let imap = if config.application_config.imap_host.is_none() ||
         config.application_config.imap_username.is_none() ||
-        config.application_config.imap_password.is_none() {
+        config.application_config.imap_password.is_none() ||
+        config.application_config.from_phone_number.is_none() {
         None
     } else {
         Some(get_imap(

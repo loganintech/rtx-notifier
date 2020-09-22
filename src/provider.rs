@@ -23,11 +23,10 @@ impl ProviderType {
                 .iter()
                 .filter(|p| p.active && p.service.contains(&self.to_key().to_string()))
             {
-
                 let message = self.new_stock_message();
                 twilio
                     .send_message(OutboundMessage::new(
-                        &notifier.config.application_config.from_phone_number,
+                        notifier.config.application_config.from_phone_number.as_ref().unwrap_or(&"".to_string()),
                         &subscriber.to_phone_number,
                         &message,
                     ))
