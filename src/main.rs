@@ -65,6 +65,19 @@ pub struct Notifier {
 
 #[tokio::main]
 async fn main() -> Result<(), NotifyError> {
+    loop {
+        let start = Local::now();
+        if let Err(e) = run_bot().await {
+            eprintln!("Error occurred: {}", e);
+        }
+        let end = Local::now();
+        println!("Took: {}", (end - start).num_seconds());
+
+        tokio::time::delay_for(std::time::Duration::from_secs(30)).await;
+    }
+}
+
+async fn run_bot() -> Result<(), NotifyError> {
     let mut notifier = get_notifier().await?;
 
     let set = mail::get_providers_from_mail(&mut notifier).await?;

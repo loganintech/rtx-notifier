@@ -2,14 +2,15 @@ use std::process::Command;
 
 use twilio::OutboundMessage;
 
-use crate::Notifier;
 use crate::error::NotifyError;
+use crate::Notifier;
 use crate::Product;
 
 #[derive(Eq, PartialEq, Clone, Hash, Debug)]
 pub enum ProviderType {
     Evga(Option<Product>),
     NewEgg(Option<Product>),
+    BestBuy(Product),
     FE(String, String),
 }
 
@@ -32,7 +33,6 @@ impl ProviderType {
                 "Sent [{}] message to {}",
                 &message, subscriber.to_phone_number
             );
-
         }
 
         if notifier.config.application_config.should_open_browser {
@@ -80,6 +80,7 @@ impl ProviderType {
             Evga(_) => "evga",
             NewEgg(_) => "newegg",
             FE(_, _) => "nvidia",
+            BestBuy(_) => "bestbuy",
         }
     }
 
@@ -90,6 +91,7 @@ impl ProviderType {
             "neweggrtx" => Some(ProviderType::NewEgg(Some(Product { product, page, ..Product::default() }))),
             "newegg" => Some(ProviderType::NewEgg(None)),
             "nvidia" => Some(ProviderType::FE(product, page)),
+            "bestbuy" => Some(ProviderType::BestBuy(Product { product, page, ..Product::default() })),
             _ => None,
         }
     }
@@ -105,6 +107,7 @@ impl ProviderType {
             }
             ProviderType::NewEgg(None) => format!("NewEgg has new products!"),
             ProviderType::FE(name, page) => format!("Nvidia has {} for sale at {}!", name, page),
+            ProviderType::BestBuy(Product { product, page, .. }) => format!("Bestbuy has {} for sale at {}!", product, page),
         }
     }
 }

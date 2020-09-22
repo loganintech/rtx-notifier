@@ -14,7 +14,7 @@ lazy_static! {
 pub async fn newegg_availability(provider: &ProductPage) -> Result<ProviderType, NotifyError> {
     let resp = reqwest::get(&provider.page)
         .await
-        .map_err(|_| NotifyError::HTMLParseFailed)?
+        .map_err(|e| NotifyError::WebRequestFailed(e))?
         .text()
         .await
         .map_err(|_| NotifyError::HTMLParseFailed)?;
@@ -24,7 +24,7 @@ pub async fn newegg_availability(provider: &ProductPage) -> Result<ProviderType,
 
         let resp = reqwest::get(product_url)
             .await
-            .map_err(|_| NotifyError::HTMLParseFailed)?
+            .map_err(|e| NotifyError::WebRequestFailed(e))?
             .text()
             .await
             .map_err(|_| NotifyError::HTMLParseFailed)?;

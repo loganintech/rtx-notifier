@@ -1,4 +1,5 @@
 mod newegg;
+mod bestbuy;
 
 use crate::error::NotifyError;
 use crate::provider::ProviderType;
@@ -22,6 +23,7 @@ impl ProductPage {
         match self.product_key.as_str() {
             "nvidia" => Err(NotifyError::NoProductFound),
             "newegg" | "neweggrtx" => newegg::newegg_availability(self).await,
+            "bestbuy" => bestbuy::bestbuy_availability(self).await,
             _ => default_availability(self).await,
         }
     }
@@ -30,12 +32,22 @@ impl ProductPage {
 pub async fn get_providers_from_scraping(
     notifier: &mut Notifier,
 ) -> Result<HashSet<ProviderType>, NotifyError> {
-    let mut providers = vec![];
+    let mut futs = vec![];
     for page in &notifier.config.products {
-        if let Ok(page) = page.is_available().await {
-            providers.push(page);
+        futs.push(page.is_available());
+    }
+
+    let joined = futures::future::join_all(futs).await;
+
+    let mut providers = vec![];
+    for res in joined {
+        match res {
+            Ok(res) => providers.push(res),
+            Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
+            _ => {}
         }
     }
+
 
     Ok(providers.into_iter().collect::<HashSet<ProviderType>>())
 }
