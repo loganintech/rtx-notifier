@@ -48,7 +48,7 @@ pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {
 
     file
         .write_all(
-            serde_json::to_string(&notifier.config)
+            serde_json::to_string_pretty(&notifier.config)
                 .map_err(|_| NotifyError::ConfigUpdate)?.as_bytes()
         ).await.map_err(|_| NotifyError::ConfigUpdate)
 }

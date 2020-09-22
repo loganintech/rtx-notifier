@@ -23,19 +23,20 @@ pub struct Product {
     product: String,
     page: String,
     product_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     css_selector: Option<String>,
     active: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Config {
-    application_config: ProjectConfig,
+    application_config: ApplicationConfig,
     subscribers: Vec<Subscriber>,
     products: Vec<ProductPage>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct ProjectConfig {
+pub struct ApplicationConfig {
     last_seen_evga: DateTime<Local>,
     last_seen_newegg: DateTime<Local>,
     last_seen_asus: DateTime<Local>,

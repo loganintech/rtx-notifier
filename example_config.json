@@ -1,0 +1,178 @@
+{
+  "application_config": {
+    "last_seen_evga": "",
+    "last_seen_newegg": "",
+    "last_seen_asus": "",
+    "last_notification_sent": "",
+    "twilio_auth_token": "",
+    "twilio_account_id": "",
+    "imap_username": "",
+    "imap_password": "",
+    "imap_host": "",
+    "from_phone_number": ""
+  },
+  "subscribers": [
+    {
+      "service": [
+        "evga",
+        "newegg"
+      ],
+      "to_phone_number": "+15555555555",
+      "active": true
+    },
+    {
+      "service": [
+        "evga",
+        "newegg"
+      ],
+      "to_phone_number": "+15555555554",
+      "active": false
+    }
+  ],
+  "products": [
+    {
+      "product_key": "evgartx",
+      "product": "EVGA RTX 3080 FTW3 Ultra",
+      "page": "https://www.evga.com/products/product.aspx?pn=10G-P5-3897-KR",
+      "css_selector": "#LFrame_pnlOutOfStock"
+    },
+    {
+      "product_key": "evgartx",
+      "product": "EVGA RTX 3080 XC3 Black",
+      "page": "https://www.evga.com/products/product.aspx?pn=10G-P5-3881-KR",
+      "css_selector": "#LFrame_pnlOutOfStock"
+    },
+    {
+      "product_key": "evgartx",
+      "product": "EVGA RTX 3080 XC3 Gaming",
+      "page": "https://www.evga.com/products/product.aspx?pn=10G-P5-3883-KR",
+      "css_selector": "#LFrame_pnlOutOfStock"
+    },
+    {
+      "product_key": "evgartx",
+      "product": "EVRA RTX 3080 XC3 Ultra",
+      "page": "https://www.evga.com/products/product.aspx?pn=10G-P5-3885-KR",
+      "css_selector": "#LFrame_pnlOutOfStock"
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "MSI RTX 3080 GAMING X TRIO",
+      "page": "https://www.newegg.com/msi-geforce-rtx-3080-rtx-3080-gaming-x-trio-10g/p/N82E16814137597",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "MSI RTX 3080 Ventus 3X",
+      "page": "https://www.newegg.com/msi-geforce-rtx-3080-rtx-3080-ventus-3x-10g-oc/p/N82E16814137598",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "MSI RTX 3080 GV-N3080GAMING OC",
+      "page": "https://www.newegg.com/gigabyte-geforce-rtx-3080-gv-n3080gaming-oc-10gd/p/N82E16814932329",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "EVGA RTX 3080 BLACK GAMING",
+      "page": "https://www.newegg.com/gigabyte-geforce-rtx-3080-gv-n3080eagle-oc-10gd/p/N82E16814932330",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "EVGA RTX 3080 XC3 Gaming",
+      "page": "https://www.newegg.com/evga-geforce-rtx-3080-10g-p5-3883-kr/p/N82E16814487521",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "ZOTAC GAMING RTX Trinity",
+      "page": "https://www.newegg.com/zotac-geforce-rtx-3080-zt-a30800d-10p/p/N82E16814500502",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "ASUS TUF Gaming 3080",
+      "page": "https://www.newegg.com/asus-geforce-rtx-3080-tuf-rtx3080-10g-gaming/p/N82E16814126453",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "ASUS ROG Strix 3080",
+      "page": "https://www.newegg.com/asus-geforce-rtx-3080-rog-strix-rtx3080-o10g-gaming/p/N82E16814126457",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "ASUS ROG Strix 3090",
+      "page": "https://www.newegg.com/asus-geforce-rtx-3090-rog-strix-rtx3090-o24g-gaming/p/N82E16814126456",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "MSI RTX 3090 VENTUS 3X",
+      "page": "https://www.newegg.com/msi-geforce-rtx-3090-rtx-3090-ventus-3x-24g/p/N82E16814137599",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "MSI RTX 3090 GAMING X TRIO",
+      "page": "https://www.newegg.com/msi-geforce-rtx-3090-rtx-3090-gaming-x-trio-24g/p/N82E16814137595",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "GIGABYTE RTX 3090",
+      "page": "https://www.newegg.com/gigabyte-geforce-rtx-3090-gv-n3090gaming-oc-24gd/p/N82E16814932327",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "GIGABYTE RTX 3090 Eagle",
+      "page": "https://www.newegg.com/gigabyte-geforce-rtx-3090-gv-n3090eagle-oc-24gd/p/N82E16814932328",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "MSI RTX 3090 VENTUS 3X",
+      "page": "https://www.newegg.com/msi-geforce-rtx-3090-rtx-3090-ventus-3x-24g-oc/p/N82E16814137596",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "ASUS TUF 3090",
+      "page": "https://www.newegg.com/asus-geforce-rtx-3090-tuf-rtx3090-24g-gaming/p/N82E16814126455",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "ZOTAC RTX 3090 Trinity",
+      "page": "https://www.newegg.com/zotac-geforce-rtx-3090-zt-a30900d-10p/p/N82E16814500503",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "ASUS TUF 3090",
+      "page": "https://www.newegg.com/asus-geforce-rtx-3090-tuf-rtx3090-o24g-gaming/p/N82E16814126454",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "MSI RTX 3090 VENTUS 3X",
+      "page": "https://www.newegg.com/msi-geforce-rtx-3080-rtx-3080-ventus-3x-10g/p/N82E16814137600",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "ASUS TUF 3080",
+      "page": "https://www.newegg.com/asus-geforce-rtx-3080-tuf-rtx3080-o10g-gaming/p/N82E16814126452",
+      "css_selector": null
+    },
+    {
+      "product_key": "neweggrtx",
+      "product": "ZOTAC RTX Gaming Trinity OC",
+      "page": "https://www.newegg.com/zotac-geforce-rtx-3080-zt-t30800j-10p/p/N82E16814500504",
+      "css_selector": null
+    }
+  ]
+}
