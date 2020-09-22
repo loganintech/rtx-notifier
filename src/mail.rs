@@ -1,5 +1,5 @@
 use crate::error::NotifyError;
-use crate::provider::{EvgaProduct, NeweggProduct, ProviderType};
+use crate::provider::ProviderType;
 use crate::Notifier;
 
 use chrono::Local;
@@ -35,12 +35,12 @@ pub async fn get_providers_from_mail(
             let subject = String::from_utf8(subject.to_vec()).ok()?;
             let subject = subject.to_ascii_lowercase();
             let date = f.internal_date()?;
-            if subject.contains("evga") && date > notifier.config.last_seen_evga {
-                notifier.config.last_seen_evga = Local::now();
-                Some(ProviderType::Evga(EvgaProduct::Unknown))
-            } else if subject.contains("newegg") && date > notifier.config.last_seen_newegg {
-                notifier.config.last_seen_newegg = Local::now();
-                Some(ProviderType::NewEgg(NeweggProduct::Unknown))
+            if subject.contains("evga") && date > notifier.config.application_config.last_seen_evga {
+                notifier.config.application_config.last_seen_evga = Local::now();
+                Some(ProviderType::Evga(None))
+            } else if subject.contains("newegg") && date > notifier.config.application_config.last_seen_newegg {
+                notifier.config.application_config.last_seen_newegg = Local::now();
+                Some(ProviderType::NewEgg(None))
             } else {
                 None
             }

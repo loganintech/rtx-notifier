@@ -1,5 +1,4 @@
 mod newegg;
-mod nvidia;
 
 use crate::error::NotifyError;
 use crate::provider::ProviderType;
@@ -10,13 +9,12 @@ use serde::{Deserialize, Serialize};
 
 use std::collections::HashSet;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ProductPage {
-    pub id: i32,
     pub product_key: String,
     pub product: String,
     pub page: String,
-    pub css_selector: String,
+    pub css_selector: Option<String>,
 }
 
 impl ProductPage {
@@ -32,20 +30,8 @@ impl ProductPage {
 pub async fn get_providers_from_scraping(
     notifier: &mut Notifier,
 ) -> Result<HashSet<ProviderType>, NotifyError> {
-    let rows = notifier
-        .db
-        .query("SELECT * FROM productpage WHERE active = true", &[])
-        .await
-        .map_err(|e| NotifyError::DBProductPageSelect(e))?;
-    if rows.len() == 0 {
-        return Ok(HashSet::new());
-    }
-
-    let pages: Vec<ProductPage> =
-        serde_postgres::from_rows(&rows).map_err(|e| NotifyError::ProductPageFromRows(e))?;
-
     let mut providers = vec![];
-    for page in pages {
+    for page in &notifier.config.products {
         if let Ok(page) = page.is_available().await {
             providers.push(page);
         }
@@ -65,7 +51,7 @@ pub async fn default_availability(provider: &ProductPage) -> Result<ProviderType
     let document = Html::parse_document(&resp);
 
     let selector =
-        Selector::parse(&provider.css_selector).map_err(|_| NotifyError::HTMLParseFailed)?;
+        Selector::parse(&provider.css_selector.clone().unwrap_or("".to_string())).map_err(|_| NotifyError::HTMLParseFailed)?;
     let mut selected = document.select(&selector);
     let found = selected.next();
     if found.is_none()

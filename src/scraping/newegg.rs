@@ -1,9 +1,10 @@
-use crate::error::NotifyError;
-use crate::provider::{NeweggProduct, ProviderType};
-use crate::scraping::ProductPage;
-
 use lazy_static::lazy_static;
 use regex::Regex;
+
+use crate::error::NotifyError;
+use crate::Product;
+use crate::provider::ProviderType;
+use crate::scraping::ProductPage;
 
 lazy_static! {
     static ref DETAIL_REGEX: Regex =
@@ -29,10 +30,11 @@ pub async fn newegg_availability(provider: &ProductPage) -> Result<ProviderType,
             .map_err(|_| NotifyError::HTMLParseFailed)?;
 
         if resp.contains(r#""instock":true"#) {
-            return Ok(ProviderType::NewEgg(NeweggProduct::Known(
-                provider.product.clone(),
-                provider.page.clone(),
-            )));
+            return Ok(ProviderType::NewEgg(Some(Product {
+                product: provider.product.clone(),
+                page: provider.page.clone(),
+                ..Product::default()
+            })));
         }
     }
 
