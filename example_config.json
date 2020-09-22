@@ -174,6 +174,48 @@
       "product": "ZOTAC RTX Gaming Trinity OC",
       "page": "https://www.newegg.com/zotac-geforce-rtx-3080-zt-t30800j-10p/p/N82E16814500504",
       "css_selector": null
+    },
+    {
+      "product_key": "bestbuy",
+      "product": "Founders Edition",
+      "page": "https://www.bestbuy.com/site/nvidia-geforce-rtx-3080-10gb-gddr6x-pci-express-4-0-graphics-card-titanium-and-black/6429440.p?skuId=6429440&intl=nosplash",
+      "css_selector": null
+    },
+    {
+      "product_key": "bestbuy",
+      "product": "ROG Strix",
+      "page": "https://www.bestbuy.com/site/asus-geforce-rtx-3080-10gb-gddr6x-pci-express-4-0-strix-graphics-card-black/6432445.p?skuId=6432445&intl=nosplash",
+      "css_selector": null
+    },
+    {
+      "product_key": "bestbuy",
+      "product": "EVGA XC3 BLACK",
+      "page": "https://www.bestbuy.com/site/evga-geforce-rtx-3080-10gb-gddr6x-pci-express-4-0-graphics-card/6432399.p?skuId=6432399&intl=nosplash",
+      "css_selector": null
+    },
+    {
+      "product_key": "bestbuy",
+      "product": "EVGA XC3 ULTRA",
+      "page": "https://www.bestbuy.com/site/evga-geforce-rtx-3080-10gb-gddr6x-pci-express-4-0-graphics-card/6432400.p?skuId=6432400&intl=nosplash",
+      "css_selector": null
+    },
+    {
+      "product_key": "bestbuy",
+      "product": "Gigabyte 3080 Black",
+      "page": "https://www.bestbuy.com/site/gigabyte-geforce-rtx-3080-10g-gddr6x-pci-express-4-0-graphics-card-black/6430620.p?acampID=0&cmp=RMX&loc=Hatch&ref=198&skuId=6430620&intl=nosplash",
+      "css_selector": null
+    },
+    {
+      "product_key": "bestbuy",
+      "product": "Gigabyte Eagle OC",
+      "page": "https://www.bestbuy.com/site/gigabyte-geforce-rtx-3080-10g-gddr6x-pci-express-4-0-graphics-card-black/6430621.p?skuId=6430621&intl=nosplash",
+      "css_selector": null
+    },
+    {
+      "product_key": "bestbuy",
+      "product": "MSI Ventus 3X OC",
+      "page": "https://www.bestbuy.com/site/msi-geforce-rtx-3080-ventus-3x-10g-oc-bv-gddr6x-pci-express-4-0-graphic-card-black-silver/6430175.p?skuId=6430175&intl=nosplash",
+      "css_selector": null
     }
   ]
 }
