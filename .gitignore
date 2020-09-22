@@ -1,5 +1,5 @@
 /target
 /vendor/
 /.idea
-/postgres-data
 /.cargo
+/config.json
