@@ -5,7 +5,7 @@ use native_tls::{self, TlsStream};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-use crate::{Config, error::NotifyError, Notifier};
+use crate::{error::NotifyError, Config, Notifier};
 
 pub fn get_imap(
     host: &str,
@@ -36,10 +36,11 @@ pub async fn get_notifier() -> Result<Notifier, NotifyError> {
 
     let config: Config = serde_json::from_str(&buf).map_err(|e| NotifyError::ConfigParse(e))?;
 
-    let imap = if config.application_config.imap_host.is_none() ||
-        config.application_config.imap_username.is_none() ||
-        config.application_config.imap_password.is_none() ||
-        config.application_config.from_phone_number.is_none() {
+    let imap = if config.application_config.imap_host.is_none()
+        || config.application_config.imap_username.is_none()
+        || config.application_config.imap_password.is_none()
+        || config.application_config.from_phone_number.is_none()
+    {
         None
     } else {
         Some(get_imap(
@@ -49,8 +50,9 @@ pub async fn get_notifier() -> Result<Notifier, NotifyError> {
         )?)
     };
 
-    let twilio = if config.application_config.twilio_account_id.is_none() ||
-        config.application_config.twilio_auth_token.is_none() {
+    let twilio = if config.application_config.twilio_account_id.is_none()
+        || config.application_config.twilio_auth_token.is_none()
+    {
         None
     } else {
         Some(twilio::Client::new(
@@ -76,6 +78,6 @@ pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {
             .map_err(|_| NotifyError::ConfigUpdate)?
             .as_bytes(),
     )
-        .await
-        .map_err(|_| NotifyError::ConfigUpdate)
+    .await
+    .map_err(|_| NotifyError::ConfigUpdate)
 }

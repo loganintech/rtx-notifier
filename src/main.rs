@@ -77,7 +77,10 @@ async fn main() -> Result<(), NotifyError> {
         if !notifier.config.application_config.daemon_mode {
             break;
         }
-        tokio::time::delay_for(std::time::Duration::from_secs(30u64.checked_sub(runtime as u64).unwrap_or(0))).await;
+        tokio::time::delay_for(std::time::Duration::from_secs(
+            30u64.checked_sub(runtime as u64).unwrap_or(0),
+        ))
+        .await;
     }
 
     Ok(())

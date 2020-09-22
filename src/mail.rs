@@ -10,9 +10,7 @@ pub async fn get_providers_from_mail(
     notifier: &mut Notifier,
 ) -> Result<HashSet<ProviderType>, NotifyError> {
     let messages = if let Some(imap) = notifier.imap.as_mut() {
-        let mailbox = imap
-            .select("INBOX")
-            .map_err(|_| NotifyError::MailboxLoad)?;
+        let mailbox = imap.select("INBOX").map_err(|_| NotifyError::MailboxLoad)?;
 
         let selected = (mailbox.exists - 10..mailbox.exists)
             .map(|n| n.to_string())
