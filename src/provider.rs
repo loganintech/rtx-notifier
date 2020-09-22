@@ -16,27 +16,29 @@ pub enum ProviderType {
 
 impl ProviderType {
     pub async fn process_provider(&self, notifier: &mut Notifier) -> Result<(), NotifyError> {
-        for subscriber in notifier
-            .config
-            .subscribers
-            .iter()
-            .filter(|p| p.active && p.service.contains(&self.to_key().to_string()))
-        {
-            let message = self.new_stock_message();
-            notifier
-                .twilio
-                .send_message(OutboundMessage::new(
-                    &notifier.config.application_config.from_phone_number,
-                    &subscriber.to_phone_number,
-                    &message,
-                ))
-                .await
-                .map_err(|e| NotifyError::TwilioSend(e))?;
+        if let Some(twilio) = &notifier.twilio {
+            for subscriber in notifier
+                .config
+                .subscribers
+                .iter()
+                .filter(|p| p.active && p.service.contains(&self.to_key().to_string()))
+            {
 
-            println!(
-                "Sent [{}] message to {}",
-                &message, subscriber.to_phone_number
-            );
+                let message = self.new_stock_message();
+                twilio
+                    .send_message(OutboundMessage::new(
+                        &notifier.config.application_config.from_phone_number,
+                        &subscriber.to_phone_number,
+                        &message,
+                    ))
+                    .await
+                    .map_err(|e| NotifyError::TwilioSend(e))?;
+
+                println!(
+                    "Sent [{}] message to {}",
+                    &message, subscriber.to_phone_number
+                );
+            }
         }
 
         if notifier.config.application_config.should_open_browser {

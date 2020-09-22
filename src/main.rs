@@ -40,11 +40,11 @@ pub struct ApplicationConfig {
     last_seen_newegg: DateTime<Local>,
     last_seen_asus: DateTime<Local>,
     last_notification_sent: DateTime<Local>,
-    twilio_auth_token: String,
-    twilio_account_id: String,
-    imap_username: String,
-    imap_password: String,
-    imap_host: String,
+    twilio_auth_token: Option<String>,
+    twilio_account_id: Option<String>,
+    imap_username: Option<String>,
+    imap_password: Option<String>,
+    imap_host: Option<String>,
     from_phone_number: String,
     should_open_browser: bool,
 }
@@ -57,8 +57,8 @@ pub struct Subscriber {
 }
 
 pub struct Notifier {
-    pub twilio: twilio::Client,
-    pub imap: imap::Session<TlsStream<TcpStream>>,
+    pub twilio: Option<twilio::Client>,
+    pub imap: Option<imap::Session<TlsStream<TcpStream>>>,
     pub config: Config,
 }
 
