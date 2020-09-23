@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use twilio::OutboundMessage;
 
 use crate::error::NotifyError;
-use crate::scraping::{bestbuy, newegg, *};
+use crate::scraping::{bestbuy, newegg, evga, *};
 use crate::Notifier;
 use crate::ProductDetails;
 
@@ -22,6 +22,7 @@ impl ProductPage {
             "nvidia" => Err(NotifyError::NoProductFound),
             "newegg" | "neweggrtx" => newegg::newegg_availability(self).await,
             "bestbuy" => bestbuy::bestbuy_availability(self).await,
+            "evga" => evga::evga_availability(self).await,
             _ => default_availability(self).await,
         }
     }
