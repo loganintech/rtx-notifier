@@ -1,8 +1,8 @@
+use std::rc::Rc;
+
 use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest::StatusCode;
-
-use std::rc::Rc;
 
 use crate::error::NotifyError;
 use crate::product::{Product, ProductPage};
@@ -35,7 +35,7 @@ pub async fn newegg_availability(provider: &ProductPage) -> Result<Product, Noti
         let product_url = &capture[1];
 
         // And load the product url
-        let resp = reqwest::get(product_url)
+        let product_resp = reqwest::get(product_url)
             .await
             .map_err(|e| NotifyError::WebRequestFailed(e))?
             .text()
@@ -43,7 +43,7 @@ pub async fn newegg_availability(provider: &ProductPage) -> Result<Product, Noti
             .map_err(|_| NotifyError::HTMLParseFailed)?;
 
         // Then look for the JSON property that shows it's in stock. Yes, we could serialize this but why bother right now
-        if resp.contains(r#""instock":true"#) {
+        if product_resp.contains(r#""instock":true"#) {
             return Ok(Product::NewEgg(Some(ProductDetails {
                 product: provider.product.clone(),
                 page: provider.page.clone(),

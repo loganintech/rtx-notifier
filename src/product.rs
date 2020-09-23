@@ -100,7 +100,7 @@ impl Product {
             .spawn()
             .map_err(|e| NotifyError::CommandErr(e))?;
         let res = child.wait().map_err(|e| NotifyError::CommandErr(e))?;
-        if res.success() {
+        if res.success() || res.code() == Some(1) {
             Ok(())
         } else {
             Err(NotifyError::CommandResult(res.code().unwrap_or(0)))
