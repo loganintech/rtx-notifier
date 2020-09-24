@@ -35,7 +35,7 @@ pub async fn bestbuy_availability(provider: &ProductDetails) -> Result<Product, 
         .map_err(|_| NotifyError::HTMLParseFailed)?;
 
     // If we can't find the sold out button, we're back in stock
-    if let None = BUTTON_REGEX.captures_iter(&resp).next() {
+    if BUTTON_REGEX.captures_iter(&resp).next().is_none() {
         return Ok(Product::BestBuy(ProductDetails {
             product: provider.product.clone(),
             page: provider.page.clone(),

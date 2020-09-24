@@ -5,7 +5,7 @@ use crate::{error::NotifyError, product::{ProductDetails, Product}};
 pub async fn evga_availability(provider: &ProductDetails) -> Result<Product, NotifyError> {
     let resp = reqwest::get(&provider.page)
         .await
-        .map_err(|e| NotifyError::WebRequestFailed(e))?
+        .map_err(NotifyError::WebRequestFailed)?
         .text()
         .await
         .map_err(|_| NotifyError::HTMLParseFailed)?;
@@ -14,7 +14,7 @@ pub async fn evga_availability(provider: &ProductDetails) -> Result<Product, Not
 
     if resp.contains("There has been an error while requesting your page") { return Err(NotifyError::NoProductFound); }
 
-    let selector = Selector::parse(&provider.css_selector.clone().unwrap_or("".to_string()))
+    let selector = Selector::parse(&provider.css_selector.clone().unwrap_or_else(|| "".to_string()))
         .map_err(|_| NotifyError::HTMLParseFailed)?;
     let mut selected = document.select(&selector);
     let found = selected.next();

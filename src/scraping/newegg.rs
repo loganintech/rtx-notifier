@@ -15,7 +15,7 @@ pub async fn newegg_availability(provider: &ProductDetails) -> Result<Product, N
     // Open a product page
     let raw_resp = reqwest::get(&provider.page)
         .await
-        .map_err(|e| NotifyError::WebRequestFailed(e))?;
+        .map_err(NotifyError::WebRequestFailed)?;
     let status = raw_resp.status();
     let resp = raw_resp
         .text()
@@ -23,7 +23,7 @@ pub async fn newegg_availability(provider: &ProductDetails) -> Result<Product, N
         .map_err(|_| NotifyError::HTMLParseFailed)?;
 
     let capture = DETAIL_REGEX.captures_iter(&resp).next();
-    if (!resp.contains("id=LFrame_tblMainA") && !capture.is_some()) || status != StatusCode::from_u16(200).unwrap() {
+    if (!resp.contains("id=LFrame_tblMainA") && capture.is_none()) || status != StatusCode::from_u16(200).unwrap() {
         return Err(NotifyError::NoPage);
     }
     // If we found the js tag with the detail URL, act on it
@@ -34,7 +34,7 @@ pub async fn newegg_availability(provider: &ProductDetails) -> Result<Product, N
         // And load the product url
         let product_resp = reqwest::get(product_url)
             .await
-            .map_err(|e| NotifyError::WebRequestFailed(e))?
+            .map_err(NotifyError::WebRequestFailed)?
             .text()
             .await
             .map_err(|_| NotifyError::HTMLParseFailed)?;

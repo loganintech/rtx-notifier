@@ -118,7 +118,7 @@ pub fn get_imap(
 
     let client =
         imap::connect((host, 993), host, &tls)
-            .map_err(NotifyError::ImapConnection)?;
+            .map_err(|e| NotifyError::ImapConnection(Box::new(e)))?;
 
     client
         .login(username, password)

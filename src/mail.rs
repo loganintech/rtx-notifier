@@ -1,10 +1,10 @@
-use crate::error::NotifyError;
-use crate::product::Product;
-use crate::Notifier;
+use std::collections::HashSet;
 
 use chrono::Local;
 
-use std::collections::HashSet;
+use crate::error::NotifyError;
+use crate::Notifier;
+use crate::product::Product;
 
 pub async fn get_providers_from_mail(
     notifier: &mut Notifier,
@@ -21,14 +21,12 @@ pub async fn get_providers_from_mail(
             .join(",");
 
         // Fetch the messages from the sequence set with the properties listed. Check the IMAP RFC for more info: https://tools.ietf.org/html/rfc3501#page-54
-        let messages = imap
+        imap
             .fetch(
                 selected,
                 "(ENVELOPE BODY[] FLAGS INTERNALDATE BODY[HEADER])",
             )
-            .map_err(|_| NotifyError::EmailFetch)?;
-
-        messages
+            .map_err(|_| NotifyError::EmailFetch)?
     } else {
         return Ok(HashSet::new());
     };

@@ -11,8 +11,24 @@ pub mod newegg;
 pub mod evga;
 
 #[async_trait]
-trait ScrapingProvider {
-    async fn has_product() -> Result<Product, NotifyError>;
+trait ScrapingProvider<'a> {
+    fn get_endpoint(&'a self) -> &'a str;
+    async fn handle_response(&self, resp: reqwest::Response) -> Result<Product, NotifyError>;
+    async fn is_available(&'a self) -> Result<Product, NotifyError> {
+        let resp = reqwest::get(self.get_endpoint())
+            .await
+            .map_err(NotifyError::WebRequestFailed)?;
+        let status = resp.status();
+
+        if !status.is_success() || status.is_server_error() {
+            return Err(NotifyError::NoPage)
+        }
+
+        if status.is_client_error() {
+            return Err(NotifyError::WebClientError)
+        }
+        self.handle_response(resp).await
+    }
 }
 
 pub async fn get_providers_from_scraping(
@@ -25,14 +41,14 @@ pub async fn get_providers_from_scraping(
 
     let joined = futures::future::join_all(futs).await;
 
-    let mut providers = vec![];
+    let mut providers = HashSet::new();
     for res in joined {
         match res {
-            Ok(res) => providers.push(res),
+            Ok(res) => if !providers.insert(res) { eprintln!("Duplicate provider found."); },
             Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
             _ => {}
         }
     }
 
-    Ok(providers.into_iter().collect::<HashSet<Product>>())
+    Ok(providers)
 }

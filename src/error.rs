@@ -3,22 +3,31 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum NotifyError {
+    // Imap Related Errors
     TlsCreation,
-    ImapConnection(imap::Error),
+    ImapConnection(Box<imap::Error>),
     ImapLogin,
     MailboxLoad,
     EmailFetch,
+
+    // Twilio Related Errors
     TwilioSend(twilio::TwilioError),
     ConfigUpdate,
-    // EmailSubjectParse,
+
+    // Config Errors
     ConfigLoad(std::io::Error),
     ConfigParse(serde_json::Error),
+
+    // Web Errors
     WebRequestFailed(reqwest::Error),
-    HTMLParseFailed,
+    WebClientError,
     NoProductFound,
+    HTMLParseFailed,
+    NoPage,
+
+    // OS Command Errors
     CommandErr(std::io::Error),
     CommandResult(i32),
-    NoPage,
 }
 
 impl fmt::Display for NotifyError {
@@ -40,6 +49,7 @@ impl fmt::Display for NotifyError {
             NotifyError::CommandErr(e) => write!(f, "CommandErr: {}", e),
             NotifyError::CommandResult(e) => write!(f, "CommandResult: {}", e),
             NotifyError::NoPage => write!(f, "NoPage"),
+            NotifyError::WebClientError => write!(f, "WebClientError"),
         }
     }
 }

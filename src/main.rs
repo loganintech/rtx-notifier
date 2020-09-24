@@ -15,7 +15,6 @@ mod mail;
 mod scraping;
 mod product;
 
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Subscriber {
     service: Vec<String>,
