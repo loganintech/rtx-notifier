@@ -10,8 +10,8 @@ use crate::scraping::{
 use crate::Notifier;
 
 #[allow(non_snake_case)]
-const fn FALSE() -> bool {
-    false
+const fn TRUE() -> bool {
+    true
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default, Hash)]
@@ -21,7 +21,7 @@ pub struct ProductDetails {
     pub product_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub css_selector: Option<String>,
-    #[serde(default = "FALSE")]
+    #[serde(default = "TRUE")]
     pub active: bool,
 }
 
