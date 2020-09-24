@@ -62,7 +62,7 @@ async fn main() -> Result<(), NotifyError> {
         }
         // Otherwise, delay for the rest of the 30 second cycle
         tokio::time::delay_for(std::time::Duration::from_secs(
-            64u64.saturating_sub(runtime as u64),
+            30u64.saturating_sub(runtime as u64),
         ))
         .await;
     }
@@ -92,5 +92,5 @@ async fn run_bot(notifier: &mut Notifier) -> Result<i64, NotifyError> {
     // Once we've run through re-write our config
     write_config(notifier).await?;
     let end = Local::now();
-    Ok((start - end).num_seconds())
+    Ok((end - start).num_seconds())
 }
