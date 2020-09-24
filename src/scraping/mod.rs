@@ -3,31 +3,42 @@ use std::collections::HashSet;
 use async_trait::async_trait;
 
 use crate::error::NotifyError;
+use crate::product::{Product, ProductDetails};
 use crate::Notifier;
-use crate::product::Product;
 
 pub mod bestbuy;
-pub mod newegg;
 pub mod evga;
+pub mod newegg;
 
 #[async_trait]
-trait ScrapingProvider<'a> {
-    fn get_endpoint(&'a self) -> &'a str;
-    async fn handle_response(&self, resp: reqwest::Response) -> Result<Product, NotifyError>;
-    async fn is_available(&'a self) -> Result<Product, NotifyError> {
-        let resp = reqwest::get(self.get_endpoint())
+pub trait ScrapingProvider<'a> {
+    async fn get_request(
+        &'a self,
+        details: &'a ProductDetails,
+    ) -> Result<reqwest::Response, NotifyError> {
+        reqwest::get(&details.page)
             .await
-            .map_err(NotifyError::WebRequestFailed)?;
+            .map_err(NotifyError::WebRequestFailed)
+    }
+    async fn handle_response(
+        &'a self,
+        resp: reqwest::Response,
+        details: &'a ProductDetails,
+    ) -> Result<Product, NotifyError>;
+
+    async fn is_available(&'a self, details: &'a ProductDetails) -> Result<Product, NotifyError> {
+        let resp = self.get_request(details).await?;
         let status = resp.status();
 
         if !status.is_success() || status.is_server_error() {
-            return Err(NotifyError::NoPage)
+            return Err(NotifyError::NoPage);
         }
 
         if status.is_client_error() {
-            return Err(NotifyError::WebClientError)
+            return Err(NotifyError::WebClientError);
         }
-        self.handle_response(resp).await
+
+        self.handle_response(resp, details).await
     }
 }
 
@@ -44,7 +55,11 @@ pub async fn get_providers_from_scraping(
     let mut providers = HashSet::new();
     for res in joined {
         match res {
-            Ok(res) => if !providers.insert(res) { eprintln!("Duplicate provider found."); },
+            Ok(res) => {
+                if !providers.insert(res) {
+                    eprintln!("Duplicate provider found.");
+                }
+            }
             Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
             _ => {}
         }

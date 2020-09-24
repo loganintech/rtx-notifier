@@ -12,8 +12,8 @@ use error::NotifyError;
 mod config;
 mod error;
 mod mail;
-mod scraping;
 mod product;
+mod scraping;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Subscriber {
@@ -30,22 +30,16 @@ pub struct Notifier {
 
 impl Notifier {
     pub fn active_subscribers(&self, key: String) -> Vec<&Subscriber> {
-        self
-            .config
+        self.config
             .subscribers
             .iter()
             // Filter the subscribers to only active subscribers that are subscribed to this provider
-            .filter(|subscriber| {
-                subscriber.active && subscriber.service.contains(&key)
-            }).collect::<Vec<&Subscriber>>()
+            .filter(|subscriber| subscriber.active && subscriber.service.contains(&key))
+            .collect::<Vec<&Subscriber>>()
     }
 
     pub fn get_from_phone_number(&self) -> Option<&String> {
-        self
-            .config
-            .application_config
-            .from_phone_number
-            .as_ref()
+        self.config.application_config.from_phone_number.as_ref()
     }
 }
 
@@ -69,7 +63,8 @@ async fn main() -> Result<(), NotifyError> {
         // Otherwise, delay for the rest of the 30 second cycle
         tokio::time::delay_for(std::time::Duration::from_secs(
             64u64.saturating_sub(runtime as u64),
-        )).await;
+        ))
+        .await;
     }
 
     Ok(())

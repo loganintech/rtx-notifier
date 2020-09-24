@@ -4,11 +4,15 @@ use serde::{Deserialize, Serialize};
 use twilio::OutboundMessage;
 
 use crate::error::NotifyError;
+use crate::scraping::{
+    bestbuy::BestBuyScraper, evga::EvgaScraper, newegg::NeweggScraper, ScrapingProvider,
+};
 use crate::Notifier;
-use crate::scraping::{bestbuy, evga, newegg};
 
 #[allow(non_snake_case)]
-const fn FALSE() -> bool { false }
+const fn FALSE() -> bool {
+    false
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default, Hash)]
 pub struct ProductDetails {
@@ -24,9 +28,9 @@ pub struct ProductDetails {
 impl ProductDetails {
     pub async fn is_available(&self) -> Result<Product, NotifyError> {
         match self.product_key.as_ref() {
-            "newegg" => newegg::newegg_availability(self).await,
-            "bestbuy" => bestbuy::bestbuy_availability(self).await,
-            "evga" => evga::evga_availability(self).await,
+            "newegg" => NeweggScraper.is_available(self).await,
+            "bestbuy" => BestBuyScraper.is_available(self).await,
+            "evga" => EvgaScraper.is_available(self).await,
             _ => Err(NotifyError::NoProductFound),
         }
     }
@@ -42,7 +46,6 @@ impl ProductDetails {
     }
 }
 
-
 #[derive(Eq, PartialEq, Clone, Hash, Debug, Serialize, Deserialize)]
 pub enum Product {
     Evga(Option<ProductDetails>),
@@ -52,10 +55,7 @@ pub enum Product {
 }
 
 impl Product {
-    pub async fn handle_found_product(
-        &self,
-        notifier: &mut Notifier,
-    ) -> Result<(), NotifyError> {
+    pub async fn handle_found_product(&self, notifier: &mut Notifier) -> Result<(), NotifyError> {
         // If the notifier is configured to open this in a browser
         if notifier.config.should_send_notification() {
             // Open the page in a browser
@@ -69,8 +69,7 @@ impl Product {
         let twilio = notifier.twilio.as_ref().unwrap();
 
         // Loop through all of our subscribers
-        for subscriber in notifier.active_subscribers(self.to_key().to_string())
-        {
+        for subscriber in notifier.active_subscribers(self.to_key().to_string()) {
             let message = &self.new_stock_message();
             // And send our text message
             twilio
@@ -110,7 +109,7 @@ impl Product {
     // If we're using windows
     #[cfg(target_os = "windows")]
     fn open_in_browser(&self) -> Result<(), NotifyError> {
-         self.run_command("explorer.exe")
+        self.run_command("explorer.exe")
     }
 
     // If we're on a mac
@@ -151,9 +150,15 @@ impl Product {
     // Get the product info from the key, name, and url
     pub fn from_product(key: &str, product: String, page: String) -> Option<Self> {
         match key {
-            "evgartx" => Some(Product::Evga(Some(ProductDetails::new_from_product_and_page(product, page)))),
-            "neweggrtx" => Some(Product::NewEgg(Some(ProductDetails::new_from_product_and_page(product, page)))),
-            "bestbuy" => Some(Product::BestBuy(ProductDetails::new_from_product_and_page(product, page))),
+            "evgartx" => Some(Product::Evga(Some(
+                ProductDetails::new_from_product_and_page(product, page),
+            ))),
+            "neweggrtx" => Some(Product::NewEgg(Some(
+                ProductDetails::new_from_product_and_page(product, page),
+            ))),
+            "bestbuy" => Some(Product::BestBuy(ProductDetails::new_from_product_and_page(
+                product, page,
+            ))),
             "evga" => Some(Product::Evga(None)),
             "newegg" => Some(Product::NewEgg(None)),
             "nvidia" => Some(Product::FE(product, page)),
@@ -164,9 +169,15 @@ impl Product {
     // Get some new in stock messages depending on product type
     fn new_stock_message(&self) -> String {
         match self {
-            Product::Evga(Some(ProductDetails { product, page, .. })) => format!("EVGA has new {} for sale at {}!", product, page),
-            Product::NewEgg(Some(ProductDetails { product, page, .. })) => format!("NewEgg has new {} for sale at {}", product, page),
-            Product::BestBuy(ProductDetails { product, page, .. }) => format!("Bestbuy has {} for sale at {}!", product, page),
+            Product::Evga(Some(ProductDetails { product, page, .. })) => {
+                format!("EVGA has new {} for sale at {}!", product, page)
+            }
+            Product::NewEgg(Some(ProductDetails { product, page, .. })) => {
+                format!("NewEgg has new {} for sale at {}", product, page)
+            }
+            Product::BestBuy(ProductDetails { product, page, .. }) => {
+                format!("Bestbuy has {} for sale at {}!", product, page)
+            }
             Product::FE(name, page) => format!("Nvidia has {} for sale at {}!", name, page),
             Product::Evga(None) => "EVGA has new products!".to_string(),
             Product::NewEgg(None) => "NewEgg has new products!".to_string(),

@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-use crate::{error::NotifyError, Notifier};
 use crate::product::ProductDetails;
 use crate::Subscriber;
+use crate::{error::NotifyError, Notifier};
 
 const CONFIG_FILE_PATH: &str = "./config.json";
 
@@ -76,22 +76,33 @@ impl Notifier {
         let config: Config = serde_json::from_str(&buf).map_err(NotifyError::ConfigParse)?;
 
         // If the imap config exists, get the imap session
-        let imap = if config.has_imap_config()
-        {
+        let imap = if config.has_imap_config() {
             Some(get_imap(
                 &config.application_config.imap_host.as_ref().unwrap(),
                 &config.application_config.imap_username.as_ref().unwrap(),
                 &config.application_config.imap_password.as_ref().unwrap(),
             )?)
-        } else { None };
+        } else {
+            None
+        };
 
         // If we have a twilio config create a client
         let twilio = if config.has_twilio_config() {
             Some(twilio::Client::new(
-                &config.application_config.twilio_account_id.as_ref().unwrap(),
-                &config.application_config.twilio_auth_token.as_ref().unwrap(),
+                &config
+                    .application_config
+                    .twilio_account_id
+                    .as_ref()
+                    .unwrap(),
+                &config
+                    .application_config
+                    .twilio_auth_token
+                    .as_ref()
+                    .unwrap(),
             ))
-        } else { None };
+        } else {
+            None
+        };
 
         // And return our built notifier
         Ok(Notifier {
@@ -106,7 +117,6 @@ impl Notifier {
     }
 }
 
-
 pub fn get_imap(
     host: &str,
     username: &str,
@@ -116,9 +126,8 @@ pub fn get_imap(
         .build()
         .map_err(|_| NotifyError::TlsCreation)?;
 
-    let client =
-        imap::connect((host, 993), host, &tls)
-            .map_err(|e| NotifyError::ImapConnection(Box::new(e)))?;
+    let client = imap::connect((host, 993), host, &tls)
+        .map_err(|e| NotifyError::ImapConnection(Box::new(e)))?;
 
     client
         .login(username, password)
@@ -137,6 +146,6 @@ pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {
             .map_err(|_| NotifyError::ConfigUpdate)?
             .as_bytes(),
     )
-        .await
-        .map_err(|_| NotifyError::ConfigUpdate)
+    .await
+    .map_err(|_| NotifyError::ConfigUpdate)
 }
