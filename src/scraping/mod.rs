@@ -1,15 +1,19 @@
 use std::collections::HashSet;
 
-use scraper::{Html, Selector};
-use serde::Serialize;
+use async_trait::async_trait;
 
 use crate::error::NotifyError;
-use crate::product::{Product, ProductPage};
 use crate::Notifier;
+use crate::product::{Product};
 
 pub mod bestbuy;
 pub mod newegg;
 pub mod evga;
+
+#[async_trait]
+trait ScrapingProvider {
+    async fn has_product() -> Result<Product, NotifyError>;
+}
 
 pub async fn get_providers_from_scraping(
     notifier: &mut Notifier,
@@ -31,8 +35,4 @@ pub async fn get_providers_from_scraping(
     }
 
     Ok(providers.into_iter().collect::<HashSet<Product>>())
-}
-
-pub async fn default_availability(_: &ProductPage) -> Result<Product, NotifyError> {
-    Err(NotifyError::NoProductFound)
 }

@@ -3,8 +3,7 @@ use regex::{Regex, RegexBuilder};
 use reqwest::header::HeaderMap;
 
 use crate::error::NotifyError;
-use crate::product::{Product, ProductPage};
-use crate::ProductDetails;
+use crate::product::{Product, ProductDetails};
 
 // LOok for the div that says it's Sold Out, case insensitive. Give it a bit of before and after HTML so that it doesn't false match on other elements
 lazy_static! {
@@ -15,7 +14,7 @@ lazy_static! {
             .expect("Invalid regex");
 }
 
-pub async fn bestbuy_availability(provider: &ProductPage) -> Result<Product, NotifyError> {
+pub async fn bestbuy_availability(provider: &ProductDetails) -> Result<Product, NotifyError> {
     // Create a new client, can't use the reqwest::get() because we need headers
     let client = reqwest::Client::new();
     let mut headers = HeaderMap::new();

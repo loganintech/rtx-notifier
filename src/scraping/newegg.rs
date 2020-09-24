@@ -1,12 +1,9 @@
-use std::rc::Rc;
-
 use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest::StatusCode;
 
 use crate::error::NotifyError;
-use crate::product::{Product, ProductPage};
-use crate::ProductDetails;
+use crate::product::{Product, ProductDetails};
 
 lazy_static! {
     // Look for the javascript tag that loads the raw product data from their webservers
@@ -14,7 +11,7 @@ lazy_static! {
         Regex::new(r#"<script type="text/javascript" src="(.+ItemInfo4.+)">"#).unwrap();
 }
 
-pub async fn newegg_availability(provider: &ProductPage) -> Result<Product, NotifyError> {
+pub async fn newegg_availability(provider: &ProductDetails) -> Result<Product, NotifyError> {
     // Open a product page
     let raw_resp = reqwest::get(&provider.page)
         .await

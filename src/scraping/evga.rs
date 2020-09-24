@@ -1,8 +1,8 @@
 use scraper::{Html, Selector};
 
-use crate::{error::NotifyError, product::{Product, ProductPage}};
+use crate::{error::NotifyError, product::{ProductDetails, Product}};
 
-pub async fn evga_availability(provider: &ProductPage) -> Result<Product, NotifyError> {
+pub async fn evga_availability(provider: &ProductDetails) -> Result<Product, NotifyError> {
     let resp = reqwest::get(&provider.page)
         .await
         .map_err(|e| NotifyError::WebRequestFailed(e))?
@@ -11,6 +11,8 @@ pub async fn evga_availability(provider: &ProductPage) -> Result<Product, Notify
         .map_err(|_| NotifyError::HTMLParseFailed)?;
 
     let document = Html::parse_document(&resp);
+
+    if resp.contains("There has been an error while requesting your page") { return Err(NotifyError::NoProductFound); }
 
     let selector = Selector::parse(&provider.css_selector.clone().unwrap_or("".to_string()))
         .map_err(|_| NotifyError::HTMLParseFailed)?;

@@ -4,31 +4,21 @@ use serde::{Deserialize, Serialize};
 use twilio::OutboundMessage;
 
 use crate::error::NotifyError;
-use crate::scraping::{bestbuy, newegg, evga, *};
 use crate::Notifier;
-use crate::ProductDetails;
+use crate::scraping::{bestbuy, evga, newegg};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ProductPage {
-    pub product_key: String,
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default, Hash)]
+pub struct ProductDetails {
     pub product: String,
     pub page: String,
+    pub product_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub css_selector: Option<String>,
+    pub active: bool,
 }
 
-impl ProductPage {
-    pub async fn is_available(&self) -> Result<Product, NotifyError> {
-        match self.product_key.as_str() {
-            "nvidia" => Err(NotifyError::NoProductFound),
-            "newegg" | "neweggrtx" => newegg::newegg_availability(self).await,
-            "bestbuy" => bestbuy::bestbuy_availability(self).await,
-            "evga" => evga::evga_availability(self).await,
-            _ => default_availability(self).await,
-        }
-    }
-}
 
-#[derive(Eq, PartialEq, Clone, Hash, Debug)]
+#[derive(Eq, PartialEq, Clone, Hash, Debug, Serialize, Deserialize)]
 pub enum Product {
     Evga(Option<ProductDetails>),
     NewEgg(Option<ProductDetails>),
@@ -37,6 +27,15 @@ pub enum Product {
 }
 
 impl Product {
+    pub async fn is_available(&self) -> Result<Product, NotifyError> {
+        match self {
+            Product::NewEgg(Some(details)) => newegg::newegg_availability(details).await,
+            Product::BestBuy(details) => bestbuy::bestbuy_availability(details).await,
+            Product::Evga(Some(details)) => evga::evga_availability(details).await,
+            _ => Err(NotifyError::NoProductFound),
+        }
+    }
+
     pub async fn process_found_in_stock_notification(
         &self,
         notifier: &mut Notifier,
@@ -44,39 +43,29 @@ impl Product {
         // If the twilio client is set
         if let Some(twilio) = &notifier.twilio {
             // Loop through all of our subscribers
-            for subscriber in notifier
-                .config
-                .subscribers
-                .iter()
-                // Filter the subscribers to only active subscribers that are subscribed to this provider
-                .filter(|subscriber| {
-                    subscriber.active && subscriber.service.contains(&self.to_key().to_string())
-                })
+            for subscriber in notifier.active_subscribers(self.to_key().to_string())
             {
-                // Get the new in stock message for this provider
-                let message = self.new_stock_message();
-                // And send our text message
-                twilio
-                    .send_message(OutboundMessage::new(
-                        // Get the from phone number. The unwrap code is supposedly unreachable because the twilio client being set
-                        // is dependent on the fact that the from_phone_number is also set
-                        notifier
-                            .config
-                            .application_config
-                            .from_phone_number
-                            .as_ref()
-                            .unwrap_or(&"".to_string()),
-                        // Get the phone number of our subscriber
-                        &subscriber.to_phone_number,
-                        &message,
-                    ))
-                    .await
-                    .map_err(|e| NotifyError::TwilioSend(e))?;
+                if notifier.should_send_notification() {
+                    // Get the new in stock message for this provider
+                    let message = self.new_stock_message();
+                    // And send our text message
+                    twilio
+                        .send_message(OutboundMessage::new(
+                            // Get the from phone number. The unwrap code is supposedly unreachable because the twilio client being set
+                            // is dependent on the fact that the from_phone_number is also set
+                            notifier.get_from_phone_number().unwrap_or(&"".to_string()),
+                            // Get the phone number of our subscriber
+                            &subscriber.to_phone_number,
+                            &message,
+                        ))
+                        .await
+                        .map_err(|e| NotifyError::TwilioSend(e))?;
 
-                println!(
-                    "Sent [{}] message to {}",
-                    &message, subscriber.to_phone_number
-                );
+                    println!(
+                        "Sent [{}] message to {}",
+                        &message, subscriber.to_phone_number
+                    );
+                }
             }
         }
 
