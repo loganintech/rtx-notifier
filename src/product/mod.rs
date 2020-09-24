@@ -7,6 +7,9 @@ use crate::error::NotifyError;
 use crate::Notifier;
 use crate::scraping::{bestbuy, evga, newegg};
 
+#[allow(non_snake_case)]
+const fn FALSE() -> bool { false }
+
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default, Hash)]
 pub struct ProductDetails {
     pub product: String,
@@ -14,7 +17,29 @@ pub struct ProductDetails {
     pub product_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub css_selector: Option<String>,
+    #[serde(default="FALSE")]
     pub active: bool,
+}
+
+impl ProductDetails {
+    pub async fn is_available(&self) -> Result<Product, NotifyError> {
+        match self.product_key.as_ref() {
+            "newegg" => newegg::newegg_availability(self).await,
+            "bestbuy" => bestbuy::bestbuy_availability(self).await,
+            "evga" => evga::evga_availability(self).await,
+            _ => Err(NotifyError::NoProductFound),
+        }
+    }
+}
+
+impl ProductDetails {
+    pub fn new_from_product_and_page(product: String, page: String) -> Self {
+        Self {
+            product,
+            page,
+            ..Self::default()
+        }
+    }
 }
 
 
@@ -27,25 +52,17 @@ pub enum Product {
 }
 
 impl Product {
-    pub async fn is_available(&self) -> Result<Product, NotifyError> {
-        match self {
-            Product::NewEgg(Some(details)) => newegg::newegg_availability(details).await,
-            Product::BestBuy(details) => bestbuy::bestbuy_availability(details).await,
-            Product::Evga(Some(details)) => evga::evga_availability(details).await,
-            _ => Err(NotifyError::NoProductFound),
-        }
-    }
-
     pub async fn process_found_in_stock_notification(
         &self,
         notifier: &mut Notifier,
     ) -> Result<(), NotifyError> {
+        let config = &notifier.config;
         // If the twilio client is set
         if let Some(twilio) = &notifier.twilio {
             // Loop through all of our subscribers
             for subscriber in notifier.active_subscribers(self.to_key().to_string())
             {
-                if notifier.should_send_notification() {
+                if config.should_send_notification() {
                     // Get the new in stock message for this provider
                     let message = self.new_stock_message();
                     // And send our text message
@@ -59,7 +76,7 @@ impl Product {
                             &message,
                         ))
                         .await
-                        .map_err(|e| NotifyError::TwilioSend(e))?;
+                        .map_err(NotifyError::TwilioSend)?;
 
                     println!(
                         "Sent [{}] message to {}",
@@ -70,7 +87,7 @@ impl Product {
         }
 
         // If the notifier is configured to open this in a browser
-        if notifier.config.application_config.should_open_browser {
+        if config.should_send_notification() {
             // Open the page in a browser
             self.open_in_browser()?;
         }
@@ -87,8 +104,8 @@ impl Product {
         let mut child = Command::new("explorer.exe")
             .arg(url)
             .spawn()
-            .map_err(|e| NotifyError::CommandErr(e))?;
-        let res = child.wait().map_err(|e| NotifyError::CommandErr(e))?;
+            .map_err(NotifyError::CommandErr)?;
+        let res = child.wait().map_err(NotifyError::CommandErr)?;
         if res.success() || res.code() == Some(1) {
             Ok(())
         } else {
@@ -146,24 +163,12 @@ impl Product {
     // Get the product info from the key, name, and url
     pub fn from_product(key: &str, product: String, page: String) -> Option<Self> {
         match key {
-            "evgartx" => Some(Product::Evga(Some(ProductDetails {
-                product,
-                page,
-                ..ProductDetails::default()
-            }))),
+            "evgartx" => Some(Product::Evga(Some(ProductDetails::new_from_product_and_page(product, page)))),
+            "neweggrtx" => Some(Product::NewEgg(Some(ProductDetails::new_from_product_and_page(product, page)))),
+            "bestbuy" => Some(Product::BestBuy(ProductDetails::new_from_product_and_page(product, page))),
             "evga" => Some(Product::Evga(None)),
-            "neweggrtx" => Some(Product::NewEgg(Some(ProductDetails {
-                product,
-                page,
-                ..ProductDetails::default()
-            }))),
             "newegg" => Some(Product::NewEgg(None)),
             "nvidia" => Some(Product::FE(product, page)),
-            "bestbuy" => Some(Product::BestBuy(ProductDetails {
-                product,
-                page,
-                ..ProductDetails::default()
-            })),
             _ => None,
         }
     }
@@ -171,18 +176,12 @@ impl Product {
     // Get some new in stock messages depending on product type
     fn new_stock_message(&self) -> String {
         match self {
-            Product::Evga(Some(ProductDetails { product, page, .. })) => {
-                format!("EVGA has new {} for sale at {}!", product, page)
-            }
-            Product::Evga(None) => format!("EVGA has new products!"),
-            Product::NewEgg(Some(ProductDetails { product, page, .. })) => {
-                format!("NewEgg has new {} for sale at {}", product, page)
-            }
-            Product::NewEgg(None) => format!("NewEgg has new products!"),
+            Product::Evga(Some(ProductDetails { product, page, .. })) => format!("EVGA has new {} for sale at {}!", product, page),
+            Product::NewEgg(Some(ProductDetails { product, page, .. })) => format!("NewEgg has new {} for sale at {}", product, page),
+            Product::BestBuy(ProductDetails { product, page, .. }) => format!("Bestbuy has {} for sale at {}!", product, page),
             Product::FE(name, page) => format!("Nvidia has {} for sale at {}!", name, page),
-            Product::BestBuy(ProductDetails { product, page, .. }) => {
-                format!("Bestbuy has {} for sale at {}!", product, page)
-            }
+            Product::Evga(None) => "EVGA has new products!".to_string(),
+            Product::NewEgg(None) => "NewEgg has new products!".to_string(),
         }
     }
 }

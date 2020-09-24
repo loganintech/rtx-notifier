@@ -4,7 +4,7 @@ use async_trait::async_trait;
 
 use crate::error::NotifyError;
 use crate::Notifier;
-use crate::product::{Product};
+use crate::product::Product;
 
 pub mod bestbuy;
 pub mod newegg;

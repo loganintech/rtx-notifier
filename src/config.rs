@@ -1,23 +1,23 @@
 use std::net::TcpStream;
 
-use serde::{Serialize, Deserialize};
 use chrono::{DateTime, Local};
 use imap::{self, Session};
 use native_tls::{self, TlsStream};
+use serde::{Deserialize, Serialize};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use crate::{error::NotifyError, Notifier};
-use crate::product::Product;
+use crate::product::ProductDetails;
 use crate::Subscriber;
 
-const CONFIG_FILE_PATH: &'static str = "./config.json";
+const CONFIG_FILE_PATH: &str = "./config.json";
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Config {
     pub application_config: ApplicationConfig,
     pub subscribers: Vec<Subscriber>,
-    pub products: Vec<Product>,
+    pub products: Vec<ProductDetails>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -36,6 +36,77 @@ pub struct ApplicationConfig {
     pub daemon_mode: bool,
 }
 
+impl Config {
+    pub fn should_open_browser(&self) -> bool {
+        self.application_config.should_open_browser
+    }
+
+    pub fn should_send_notification(&self) -> bool {
+        self.application_config.last_notification_sent
+            < (Local::now() - chrono::Duration::minutes(30))
+    }
+
+    pub fn has_twilio_config(&self) -> bool {
+        self.application_config.twilio_account_id.is_some()
+            && self.application_config.twilio_auth_token.is_some()
+            && self.application_config.from_phone_number.is_some()
+    }
+
+    pub fn has_imap_config(&self) -> bool {
+        self.application_config.imap_host.is_some()
+            && self.application_config.imap_username.is_some()
+            && self.application_config.imap_password.is_some()
+    }
+}
+
+impl Notifier {
+    pub async fn new() -> Result<Self, NotifyError> {
+        // Open our config
+        let mut file = File::open(CONFIG_FILE_PATH)
+            .await
+            .map_err(NotifyError::ConfigLoad)?;
+
+        // And read it into a string
+        let mut buf = String::new();
+        file.read_to_string(&mut buf)
+            .await
+            .map_err(NotifyError::ConfigLoad)?;
+
+        // Use serde to deserialize the config
+        let config: Config = serde_json::from_str(&buf).map_err(NotifyError::ConfigParse)?;
+
+        // If the imap config exists, get the imap session
+        let imap = if config.has_imap_config()
+        {
+            Some(get_imap(
+                &config.application_config.imap_host.as_ref().unwrap(),
+                &config.application_config.imap_username.as_ref().unwrap(),
+                &config.application_config.imap_password.as_ref().unwrap(),
+            )?)
+        } else { None };
+
+        // If we have a twilio config create a client
+        let twilio = if config.has_twilio_config() {
+            Some(twilio::Client::new(
+                &config.application_config.twilio_account_id.as_ref().unwrap(),
+                &config.application_config.twilio_auth_token.as_ref().unwrap(),
+            ))
+        } else { None };
+
+        // And return our built notifier
+        Ok(Notifier {
+            imap,
+            twilio,
+            config,
+        })
+    }
+
+    pub fn daemon_mode(&self) -> bool {
+        self.config.application_config.daemon_mode
+    }
+}
+
+
 pub fn get_imap(
     host: &str,
     username: &str,
@@ -46,62 +117,12 @@ pub fn get_imap(
         .map_err(|_| NotifyError::TlsCreation)?;
 
     let client =
-        imap::connect((host, 993), host, &tls).map_err(|e| NotifyError::ImapConnection(e))?;
+        imap::connect((host, 993), host, &tls)
+            .map_err(NotifyError::ImapConnection)?;
 
     client
         .login(username, password)
         .map_err(|_| NotifyError::ImapLogin)
-}
-
-pub async fn get_notifier() -> Result<Notifier, NotifyError> {
-    // Open our config
-    let mut file = File::open(CONFIG_FILE_PATH)
-        .await
-        .map_err(|e| NotifyError::ConfigLoad(e))?;
-
-    // And read it into a string
-    let mut buf = String::new();
-    file.read_to_string(&mut buf)
-        .await
-        .map_err(|e| NotifyError::ConfigLoad(e))?;
-
-    // Use serde to deserialize the config
-    let config: Config = serde_json::from_str(&buf).map_err(|e| NotifyError::ConfigParse(e))?;
-
-    // If the config is missing any of the imap properties, set imap to None
-    let imap = if config.application_config.imap_host.is_none()
-               || config.application_config.imap_username.is_none()
-               || config.application_config.imap_password.is_none()
-    {
-        None
-    } else {
-        // Otherwise start an IMAP session
-        Some(get_imap(
-            &config.application_config.imap_host.clone().unwrap(),
-            &config.application_config.imap_username.clone().unwrap(),
-            &config.application_config.imap_password.clone().unwrap(),
-        )?)
-    };
-
-    // If any of our twilio config is missing, set it to none
-    let twilio = if config.application_config.twilio_account_id.is_none()
-                 || config.application_config.twilio_auth_token.is_none()
-                 || config.application_config.from_phone_number.is_none() {
-        None
-    } else {
-        // Otherwise create a twilio client
-        Some(twilio::Client::new(
-            &config.application_config.twilio_account_id.clone().unwrap(),
-            &config.application_config.twilio_auth_token.clone().unwrap(),
-        ))
-    };
-
-    // And return our built notifier
-    Ok(Notifier {
-        imap,
-        twilio,
-        config,
-    })
 }
 
 pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {

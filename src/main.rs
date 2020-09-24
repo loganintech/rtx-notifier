@@ -30,19 +30,6 @@ pub struct Notifier {
 }
 
 impl Notifier {
-    pub fn daemon_mode(&self) -> bool {
-        self.config.application_config.daemon_mode
-    }
-
-    pub fn config(&self) -> bool {
-        self.config.application_config.should_open_browser
-    }
-
-    pub fn should_send_notification(&self) -> bool {
-        self.config.application_config.last_notification_sent
-            < (Local::now() - chrono::Duration::minutes(30))
-    }
-
     pub fn active_subscribers(&self, key: String) -> Vec<&Subscriber> {
         self
             .config
@@ -66,37 +53,35 @@ impl Notifier {
 #[tokio::main]
 async fn main() -> Result<(), NotifyError> {
     // Get notifier instance and settings
-    let mut notifier = get_notifier().await?;
+    let mut notifier = Notifier::new().await?;
     loop {
-        let start = Local::now();
-        if let Err(e) = run_bot(&mut notifier).await {
-            eprintln!("Error occurred: {}", e);
-        }
-        let end = Local::now();
-        // Get total runtime in seconds
-        let runtime = (start - end).num_seconds();
+        let runtime = match run_bot(&mut notifier).await {
+            Ok(runtime) => runtime,
+            Err(e) => {
+                eprintln!("Error occurred: {}", e);
+                0
+            }
+        };
 
         // If we're not in daemon mode, break out of this loop
-        if !notifier.config.application_config.daemon_mode {
+        if !notifier.daemon_mode() {
             break;
         }
         // Otherwise, delay for the rest of the 30 second cycle
         tokio::time::delay_for(std::time::Duration::from_secs(
-            30u64.checked_sub(runtime as u64).unwrap_or(0),
-        ))
-            .await;
+            64u64.saturating_sub(runtime as u64),
+        )).await;
     }
 
     Ok(())
 }
 
-async fn run_bot(notifier: &mut Notifier) -> Result<(), NotifyError> {
+async fn run_bot(notifier: &mut Notifier) -> Result<i64, NotifyError> {
+    let start = Local::now();
     // Check the scraped websites
     let scraped_set = scraping::get_providers_from_scraping(notifier).await?;
     // Check the mail providers
     let set = mail::get_providers_from_mail(notifier).await?;
-
-    // If the last time we sent a message was more recent than 30 minutes ago, don't try to send messages
 
     // Only send a message if we haven't sent one in the last 5 minutes
     for provider in set.iter().chain(scraped_set.iter()) {
@@ -112,5 +97,6 @@ async fn run_bot(notifier: &mut Notifier) -> Result<(), NotifyError> {
 
     // Once we've run through re-write our config
     write_config(notifier).await?;
-    Ok(())
+    let end = Local::now();
+    Ok((start - end).num_seconds())
 }

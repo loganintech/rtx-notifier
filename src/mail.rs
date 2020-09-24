@@ -15,7 +15,7 @@ pub async fn get_providers_from_mail(
         let mailbox = imap.select("INBOX").map_err(|_| NotifyError::MailboxLoad)?;
 
         // Create a sequence set of the last 50 messages. (Format 1,2,3,4,5...)
-        let selected = (mailbox.exists - mailbox.exists - 50..mailbox.exists)
+        let selected = (mailbox.exists - 50..mailbox.exists)
             .map(|n| n.to_string())
             .collect::<Vec<String>>()
             .join(",");

@@ -29,7 +29,7 @@ pub async fn bestbuy_availability(provider: &ProductDetails) -> Result<Product, 
         .headers(headers)
         .send()
         .await
-        .map_err(|e| NotifyError::WebRequestFailed(e))?
+        .map_err(NotifyError::WebRequestFailed)?
         .text()
         .await
         .map_err(|_| NotifyError::HTMLParseFailed)?;
