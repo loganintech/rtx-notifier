@@ -75,10 +75,10 @@ async fn run_bot(notifier: &mut Notifier) -> Result<i64, NotifyError> {
     // Check the scraped websites
     let scraped_set = scraping::get_providers_from_scraping(notifier).await?;
     // Check the mail providers
-    let set = mail::get_providers_from_mail(notifier).await?;
+    let email_set = mail::get_providers_from_mail(notifier).await?;
 
     // Only send a message if we haven't sent one in the last 5 minutes
-    for provider in set.iter().chain(scraped_set.iter()) {
+    for provider in email_set.iter().chain(scraped_set.iter()) {
         // If we found any providers, send the messages
         // If it results in an error print the error
         if let Err(e) = provider.handle_found_product(notifier).await {
