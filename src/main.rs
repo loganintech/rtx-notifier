@@ -86,7 +86,7 @@ async fn run_bot(notifier: &mut Notifier) -> Result<i64, NotifyError> {
     for provider in set.iter().chain(scraped_set.iter()) {
         // If we found any providers, send the messages
         // If it results in an error print the error
-        if let Err(e) = provider.process_found_in_stock_notification(notifier).await {
+        if let Err(e) = provider.handle_found_product(notifier).await {
             eprintln!("Error: {}", e);
         } else {
             // If we don't have an error, update the last notification sent timer

@@ -17,7 +17,7 @@ pub struct ProductDetails {
     pub product_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub css_selector: Option<String>,
-    #[serde(default="FALSE")]
+    #[serde(default = "FALSE")]
     pub active: bool,
 }
 
@@ -52,56 +52,50 @@ pub enum Product {
 }
 
 impl Product {
-    pub async fn process_found_in_stock_notification(
+    pub async fn handle_found_product(
         &self,
         notifier: &mut Notifier,
     ) -> Result<(), NotifyError> {
-        let config = &notifier.config;
-        // If the twilio client is set
-        if let Some(twilio) = &notifier.twilio {
-            // Loop through all of our subscribers
-            for subscriber in notifier.active_subscribers(self.to_key().to_string())
-            {
-                if config.should_send_notification() {
-                    // Get the new in stock message for this provider
-                    let message = self.new_stock_message();
-                    // And send our text message
-                    twilio
-                        .send_message(OutboundMessage::new(
-                            // Get the from phone number. The unwrap code is supposedly unreachable because the twilio client being set
-                            // is dependent on the fact that the from_phone_number is also set
-                            notifier.get_from_phone_number().unwrap_or(&"".to_string()),
-                            // Get the phone number of our subscriber
-                            &subscriber.to_phone_number,
-                            &message,
-                        ))
-                        .await
-                        .map_err(NotifyError::TwilioSend)?;
-
-                    println!(
-                        "Sent [{}] message to {}",
-                        &message, subscriber.to_phone_number
-                    );
-                }
-            }
-        }
-
         // If the notifier is configured to open this in a browser
-        if config.should_send_notification() {
+        if notifier.config.should_send_notification() {
             // Open the page in a browser
             self.open_in_browser()?;
+        }
+
+        if notifier.twilio.is_none() || !notifier.config.should_send_notification() {
+            return Ok(());
+        }
+
+        let twilio = notifier.twilio.as_ref().unwrap();
+
+        // Loop through all of our subscribers
+        for subscriber in notifier.active_subscribers(self.to_key().to_string())
+        {
+            let message = &self.new_stock_message();
+            // And send our text message
+            twilio
+                .send_message(OutboundMessage::new(
+                    notifier.get_from_phone_number().unwrap(), // If this unwrap panics someone (probably Logan), has severely broken the twilio integration
+                    &subscriber.to_phone_number,
+                    message,
+                ))
+                .await
+                .map_err(NotifyError::TwilioSend)?;
+
+            println!(
+                "Sent [{}] message to {}",
+                message, subscriber.to_phone_number
+            );
         }
 
         Ok(())
     }
 
-    // If we're using windows
-    #[cfg(target_os = "windows")]
-    fn open_in_browser(&self) -> Result<(), NotifyError> {
+    fn run_command(&self, command: &str) -> Result<(), NotifyError> {
         // Get the url of the product
         let url = self.get_url()?;
         // Run the explorer command with the URL as the param
-        let mut child = Command::new("explorer.exe")
+        let mut child = Command::new(command)
             .arg(url)
             .spawn()
             .map_err(NotifyError::CommandErr)?;
@@ -113,22 +107,16 @@ impl Product {
         }
     }
 
+    // If we're using windows
+    #[cfg(target_os = "windows")]
+    fn open_in_browser(&self) -> Result<(), NotifyError> {
+         self.run_command("explorer.exe")
+    }
+
     // If we're on a mac
     #[cfg(target_os = "macos")]
     fn open_in_browser(&self) -> Result<(), NotifyError> {
-        // Get the url of the product
-        let url = self.get_url()?;
-        // Run the explorer command with the URL as the param
-        let mut child = Command::new("open")
-            .arg(url)
-            .spawn()
-            .map_err(|e| NotifyError::CommandErr(e))?;
-        let res = child.wait().map_err(|e| NotifyError::CommandErr(e))?;
-        if res.success() {
-            Ok(())
-        } else {
-            Err(NotifyError::CommandResult(res.code().unwrap_or(0)))
-        }
+        self.run_command("open")
     }
 
     // If we're not on a mac or windows machine, just succeed without doing anything
