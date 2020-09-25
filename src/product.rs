@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::NotifyError,
-    notifier::{twilio, discord},
+    notifier::{discord, twilio},
     scraping::{
         bestbuy::BestBuyScraper, evga::EvgaScraper, newegg::NeweggScraper, ScrapingProvider,
     },
@@ -66,7 +66,6 @@ impl Product {
         }
 
         if let Some(discord_url) = &notifier.config.application_config.discord_url {
-            println!("Discord Webhook: {}", discord_url);
             discord::send_webhook(self, discord_url).await?
         }
 
@@ -88,10 +87,6 @@ impl Product {
                 )
                 .await?;
             }
-        }
-
-        if let Some(discord_url) = &notifier.config.application_config.discord_url {
-            discord::send_webhook(self, discord_url).await?
         }
 
         Ok(())

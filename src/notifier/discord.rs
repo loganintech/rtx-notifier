@@ -1,32 +1,30 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{NotifyError, product::Product};
+use crate::{product::Product, NotifyError};
 
-pub async fn send_webhook(
-    product: &Product,
-    url: &str,
-) -> Result<(), NotifyError> {
+pub async fn send_webhook(product: &Product, url: &str) -> Result<(), NotifyError> {
     let message = product.new_stock_message();
 
     let webhook_body = DiscordWebhook {
         username: Some("RTX Notifier".to_string()),
-        avatar_url: Some("https://images.evga.com/products/gallery/png/10G-P5-3897-KR_LG_1.png".to_string()),
+        avatar_url: Some(
+            "https://images.evga.com/products/gallery/png/10G-P5-3897-KR_LG_1.png".to_string(),
+        ),
         content: None,
-        embeds: vec![
-            WebhookEmbed {
-                title: Some(format!("Found Inventory {}", product.to_key())),
-                url: Some(product.get_url()?.to_string()),
-                description: Some(message.clone()),
-                color: 0,
-                fields: vec![],
-            }
-        ],
+        embeds: vec![WebhookEmbed {
+            title: Some(format!("Found Inventory {}", product.to_key())),
+            url: Some(product.get_url()?.to_string()),
+            description: Some(message.clone()),
+            color: 0,
+            fields: vec![],
+        }],
     };
 
     let payload = serde_json::to_string(&webhook_body).unwrap();
 
     let client = reqwest::Client::new();
-    let res = client.post(url)
+    let res = client
+        .post(url)
         .body(payload.clone())
         .header("Content-Type", "application/json")
         .send()
