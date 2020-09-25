@@ -28,6 +28,7 @@ pub async fn send_webhook(
     let client = reqwest::Client::new();
     let res = client.post(url)
         .body(payload.clone())
+        .header("Content-Type", "application/json")
         .send()
         .await
         .map_err(NotifyError::WebRequestFailed)?;

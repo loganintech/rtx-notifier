@@ -31,9 +31,9 @@ pub struct ProductDetails {
 impl ProductDetails {
     pub async fn is_available(&self) -> Result<Product, NotifyError> {
         match self.product_key.as_ref() {
-            "newegg" => NeweggScraper.is_available(self).await,
+            "newegg" | "neweggrtx" => NeweggScraper.is_available(self).await,
             "bestbuy" => BestBuyScraper.is_available(self).await,
-            "evga" => EvgaScraper.is_available(self).await,
+            "evga" | "evgartx" => EvgaScraper.is_available(self).await,
             _ => Err(NotifyError::NoProductFound),
         }
     }
@@ -60,13 +60,18 @@ pub enum Product {
 impl Product {
     pub async fn handle_found_product(&self, notifier: &mut Notifier) -> Result<(), NotifyError> {
         // If the notifier is configured to open this in a browser
-        if notifier.config.should_send_notification() {
+        if notifier.config.should_open_browser() {
             // Open the page in a browser
             self.open_in_browser()?;
         }
 
+        if let Some(discord_url) = &notifier.config.application_config.discord_url {
+            println!("Discord Webhook: {}", discord_url);
+            discord::send_webhook(self, discord_url).await?
+        }
+
         let has_twilio_config = notifier.config.has_twilio_config();
-        if has_twilio_config {
+        if has_twilio_config && notifier.config.should_send_notification() {
             let subscribers = notifier.active_subscribers(self.to_key());
             let client = notifier.twilio.as_ref().unwrap();
             for subscriber in subscribers {
@@ -92,12 +97,12 @@ impl Product {
         Ok(())
     }
 
-    fn run_command(&self, command: &str) -> Result<(), NotifyError> {
+    fn run_command(&self, command: &str, args: &[&str]) -> Result<(), NotifyError> {
         // Get the url of the product.rs
         let url = self.get_url()?;
         // Run the explorer command with the URL as the param
         let mut child = Command::new(command)
-            .arg(url)
+            .args(args)
             .spawn()
             .map_err(NotifyError::CommandErr)?;
         let res = child.wait().map_err(NotifyError::CommandErr)?;
@@ -111,13 +116,15 @@ impl Product {
     // If we're using windows
     #[cfg(target_os = "windows")]
     fn open_in_browser(&self) -> Result<(), NotifyError> {
-        self.run_command("explorer.exe")
+        let url = self.get_url()?;
+        self.run_command("cmd", &["/C", "start", url])
     }
 
     // If we're on a mac
     #[cfg(target_os = "macos")]
     fn open_in_browser(&self) -> Result<(), NotifyError> {
-        self.run_command("open")
+        let url = self.get_url()?;
+        self.run_command("open", &[url])
     }
 
     // If we're not on a mac or windows machine, just succeed without doing anything

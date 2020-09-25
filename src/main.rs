@@ -83,7 +83,7 @@ async fn run_bot(notifier: &mut Notifier) -> Result<i64, NotifyError> {
         // If we found any providers, send the messages
         // If it results in an error print the error
         if let Err(e) = provider.handle_found_product(notifier).await {
-            eprintln!("Error: {}", e);
+            eprintln!("Provider {:?} had issue : {}", provider, e);
         } else {
             // If we don't have an error, update the last notification sent timer
             notifier.config.application_config.last_notification_sent = Local::now();
