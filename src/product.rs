@@ -174,15 +174,15 @@ impl Product {
     pub fn new_stock_message(&self) -> String {
         match self {
             Product::Evga(Some(ProductDetails { product, page, .. })) => {
-                format!("EVGA has new {} for sale at {}!", product, page)
+                format!("EVGA has new {} for sale at {}", product, page)
             }
             Product::NewEgg(Some(ProductDetails { product, page, .. })) => {
                 format!("NewEgg has new {} for sale at {}", product, page)
             }
             Product::BestBuy(ProductDetails { product, page, .. }) => {
-                format!("Bestbuy has {} for sale at {}!", product, page)
+                format!("Bestbuy has {} for sale at {}", product, page)
             }
-            Product::FE(name, page) => format!("Nvidia has {} for sale at {}!", name, page),
+            Product::FE(name, page) => format!("Nvidia has {} for sale at {}", name, page),
             Product::Evga(None) => "EVGA has new products!".to_string(),
             Product::NewEgg(None) => "NewEgg has new products!".to_string(),
         }

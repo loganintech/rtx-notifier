@@ -36,11 +36,7 @@ pub async fn send_webhook(product: &Product, url: &str) -> Result<(), NotifyErro
         return Err(NotifyError::WebClientError);
     }
 
-    println!(
-        "Sent discord webhook to {}\nPayload: {}",
-        message,
-        payload
-    );
+    println!("Sent discord webhook to {}\nPayload: {}", message, payload);
 
     Ok(())
 }
