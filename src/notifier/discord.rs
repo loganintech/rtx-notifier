@@ -23,9 +23,11 @@ pub async fn send_webhook(
         ],
     };
 
+    let payload = serde_json::to_string(&webhook_body).unwrap();
+
     let client = reqwest::Client::new();
     let res = client.post(url)
-        .body(serde_json::to_string(&webhook_body).unwrap())
+        .body(payload.clone())
         .send()
         .await
         .map_err(NotifyError::WebRequestFailed)?;
@@ -35,10 +37,10 @@ pub async fn send_webhook(
         return Err(NotifyError::WebClientError);
     }
 
-
     println!(
-        "Sent discord webhook to {}",
-        message
+        "Sent discord webhook to {}\nPayload: {}",
+        message,
+        payload
     );
 
     Ok(())
