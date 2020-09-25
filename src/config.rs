@@ -34,6 +34,7 @@ pub struct ApplicationConfig {
     pub from_phone_number: Option<String>,
     pub should_open_browser: bool,
     pub daemon_mode: bool,
+    pub discord_url: Option<String>,
 }
 
 impl Config {

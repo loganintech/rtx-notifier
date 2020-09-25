@@ -12,6 +12,7 @@ use error::NotifyError;
 mod config;
 mod error;
 mod mail;
+mod notifier;
 mod product;
 mod scraping;
 
@@ -29,12 +30,12 @@ pub struct Notifier {
 }
 
 impl Notifier {
-    pub fn active_subscribers(&self, key: String) -> Vec<&Subscriber> {
+    pub fn active_subscribers(&self, key: &str) -> Vec<&Subscriber> {
         self.config
             .subscribers
             .iter()
             // Filter the subscribers to only active subscribers that are subscribed to this provider
-            .filter(|subscriber| subscriber.active && subscriber.service.contains(&key))
+            .filter(|subscriber| subscriber.active && subscriber.service.contains(&key.to_string()))
             .collect::<Vec<&Subscriber>>()
     }
 

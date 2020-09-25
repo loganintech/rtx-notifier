@@ -1,14 +1,17 @@
 use std::process::Command;
 
 use serde::{Deserialize, Serialize};
-use twilio::OutboundMessage;
 
-use crate::error::NotifyError;
-use crate::scraping::{
-    bestbuy::BestBuyScraper, evga::EvgaScraper, newegg::NeweggScraper, ScrapingProvider,
+use crate::{
+    error::NotifyError,
+    notifier::{twilio, discord},
+    scraping::{
+        bestbuy::BestBuyScraper, evga::EvgaScraper, newegg::NeweggScraper, ScrapingProvider,
+    },
+    Notifier,
 };
-use crate::Notifier;
 
+// This is a workaround for Serde because it doesn't support literals as defaults
 #[allow(non_snake_case)]
 const fn TRUE() -> bool {
     true
@@ -62,36 +65,35 @@ impl Product {
             self.open_in_browser()?;
         }
 
-        if notifier.twilio.is_none() || !notifier.config.should_send_notification() {
-            return Ok(());
+        let has_twilio_config = notifier.config.has_twilio_config();
+        if has_twilio_config {
+            let subscribers = notifier.active_subscribers(self.to_key());
+            let client = notifier.twilio.as_ref().unwrap();
+            for subscriber in subscribers {
+                twilio::send_twilio_message(
+                    self,
+                    client,
+                    subscriber,
+                    notifier
+                        .config
+                        .application_config
+                        .from_phone_number
+                        .as_ref()
+                        .unwrap(),
+                )
+                .await?;
+            }
         }
 
-        let twilio = notifier.twilio.as_ref().unwrap();
-
-        // Loop through all of our subscribers
-        for subscriber in notifier.active_subscribers(self.to_key().to_string()) {
-            let message = &self.new_stock_message();
-            // And send our text message
-            twilio
-                .send_message(OutboundMessage::new(
-                    notifier.get_from_phone_number().unwrap(), // If this unwrap panics someone (probably Logan), has severely broken the twilio integration
-                    &subscriber.to_phone_number,
-                    message,
-                ))
-                .await
-                .map_err(NotifyError::TwilioSend)?;
-
-            println!(
-                "Sent [{}] message to {}",
-                message, subscriber.to_phone_number
-            );
+        if let Some(discord_url) = &notifier.config.application_config.discord_url {
+            discord::send_webhook(self, discord_url).await?
         }
 
         Ok(())
     }
 
     fn run_command(&self, command: &str) -> Result<(), NotifyError> {
-        // Get the url of the product
+        // Get the url of the product.rs
         let url = self.get_url()?;
         // Run the explorer command with the URL as the param
         let mut child = Command::new(command)
@@ -125,8 +127,8 @@ impl Product {
     }
 
     // Get the page from the Product
-    fn get_url(&self) -> Result<&str, NotifyError> {
-        // Get a reference to the page property of each product type
+    pub fn get_url(&self) -> Result<&str, NotifyError> {
+        // Get a reference to the page property of each product.rs type
         match self {
             Product::Evga(Some(ProductDetails { page, .. }))
             | Product::NewEgg(Some(ProductDetails { page, .. }))
@@ -136,8 +138,8 @@ impl Product {
         }
     }
 
-    // Get the product key from the type
-    fn to_key(&self) -> &'static str {
+    // Get the product.rs key from the type
+    pub fn to_key(&self) -> &'static str {
         use Product::*;
         match self {
             Evga(_) => "evga",
@@ -147,7 +149,7 @@ impl Product {
         }
     }
 
-    // Get the product info from the key, name, and url
+    // Get the product.rs info from the key, name, and url
     pub fn from_product(key: &str, product: String, page: String) -> Option<Self> {
         match key {
             "evgartx" => Some(Product::Evga(Some(
@@ -166,8 +168,8 @@ impl Product {
         }
     }
 
-    // Get some new in stock messages depending on product type
-    fn new_stock_message(&self) -> String {
+    // Get some new in stock messages depending on product.rs type
+    pub fn new_stock_message(&self) -> String {
         match self {
             Product::Evga(Some(ProductDetails { product, page, .. })) => {
                 format!("EVGA has new {} for sale at {}!", product, page)

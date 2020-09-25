@@ -2,12 +2,14 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use super::ScrapingProvider;
-use crate::error::NotifyError;
-use crate::product::{Product, ProductDetails};
+use crate::{
+    error::NotifyError,
+    product::{Product, ProductDetails},
+    scraping::ScrapingProvider,
+};
 
 lazy_static! {
-    // Look for the javascript tag that loads the raw product data from their webservers
+    // Look for the javascript tag that loads the raw product.rs data from their webservers
     static ref DETAIL_REGEX: Regex =
         Regex::new(r#"<script type="text/javascript" src="(.+ItemInfo4.+)">"#).unwrap();
 }
@@ -32,7 +34,7 @@ impl<'a> ScrapingProvider<'a> for NeweggScraper {
             // Extract the URL knowing capture[0] is the entire match, not just the capturing group
             let product_url = &capture[1];
 
-            // And load the product url
+            // And load the product.rs url
             let product_resp = reqwest::get(product_url)
                 .await
                 .map_err(NotifyError::WebRequestFailed)?

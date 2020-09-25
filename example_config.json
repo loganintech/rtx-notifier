@@ -16,7 +16,9 @@
     "imap_host": null, // this is a string ""
     // These are personal choices. I recommend daemon mode if you're just running locally (it will keep running, and check for new products every 30 secnods)
     "should_open_browser": true,
-    "daemon_mode": true
+    "daemon_mode": true,
+    // Webhook to send to discord
+    "discord_url": null,
   },
   "subscribers": [
     {

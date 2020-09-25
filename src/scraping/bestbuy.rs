@@ -3,10 +3,11 @@ use lazy_static::lazy_static;
 use regex::{Regex, RegexBuilder};
 use reqwest::header::HeaderMap;
 
-use crate::error::NotifyError;
-use crate::product::{Product, ProductDetails};
-
-use super::ScrapingProvider;
+use crate::{
+    error::NotifyError,
+    product::{Product, ProductDetails},
+    scraping::ScrapingProvider,
+};
 
 // LOok for the div that says it's Sold Out, case insensitive. Give it a bit of before and after HTML so that it doesn't false match on other elements
 lazy_static! {
