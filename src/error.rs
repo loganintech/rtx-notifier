@@ -22,7 +22,6 @@ pub enum NotifyError {
 
     // Web Errors
     WebRequestFailed(reqwest::Error),
-    WebClientError,
     NoProductFound,
     HTMLParseFailed,
     NoPage,
