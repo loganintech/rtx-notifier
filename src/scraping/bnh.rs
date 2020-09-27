@@ -20,7 +20,10 @@ impl<'a> ScrapingProvider<'a> for BnHScraper {
             .await
             .map_err(|_| NotifyError::HTMLParseFailed)?;
 
-        println!("BNH: {}", resp);
+        if resp.contains(r#"showNotifyWhenAvailable": false"#) && resp.contains(r#"showNotifyWhenInStock": false"#) {
+            return Ok(product.clone());
+        }
+
         Err(NotifyError::NoProductFound)
     }
 }

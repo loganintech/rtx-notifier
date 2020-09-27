@@ -24,7 +24,7 @@ pub trait ScrapingProvider<'a> {
         let client = reqwest::Client::new();
         let mut headers = HeaderMap::new();
         // Add some headers for a user agent, otherwise the host refuses connection
-        headers.insert("User-Agent", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0".parse().unwrap());
+        headers.insert("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0".parse().unwrap());
 
         // Load the webpage
         client
@@ -34,6 +34,7 @@ pub trait ScrapingProvider<'a> {
             .await
             .map_err(NotifyError::WebRequestFailed)
     }
+
     async fn handle_response(
         &'a self,
         resp: reqwest::Response,
@@ -49,12 +50,16 @@ pub trait ScrapingProvider<'a> {
             return Err(NotifyError::RateLimit);
         }
 
-        if !status.is_success() || status.is_server_error() {
-            return Err(NotifyError::NoPage);
+        if status.is_server_error() {
+            return Err(NotifyError::ServerError(status));
         }
 
         if status.is_client_error() {
-            return Err(NotifyError::WebClientError);
+            return Err(NotifyError::ClientError(status));
+        }
+
+        if !status.is_success() {
+            return Err(NotifyError::BadStatus(status));
         }
 
         self.handle_response(resp, product).await
@@ -85,7 +90,8 @@ pub async fn get_providers_from_scraping(
             }
             Err(NotifyError::RateLimit) => notifier.config.application_config.scraping_timeout = Some(Local::now() + Duration::minutes(5)),
             Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
-            _ => {}
+            Err(NotifyError::NoProductFound) => {},
+            Err(e) => eprintln!("Error: {}", e),
         }
     }
 

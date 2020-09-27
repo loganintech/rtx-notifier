@@ -27,6 +27,9 @@ pub enum NotifyError {
     HTMLParseFailed,
     NoPage,
     RateLimit,
+    ClientError(reqwest::StatusCode),
+    ServerError(reqwest::StatusCode),
+    BadStatus(reqwest::StatusCode),
 
     // OS Command Errors
     CommandErr(std::io::Error),
@@ -52,10 +55,12 @@ impl fmt::Display for NotifyError {
             NotifyError::CommandErr(e) => write!(f, "CommandErr: {}", e),
             NotifyError::CommandResult(e) => write!(f, "CommandResult: {}", e),
             NotifyError::NoPage => write!(f, "NoPage"),
-            NotifyError::WebClientError => write!(f, "WebClientError"),
+            NotifyError::ClientError(e) => write!(f, "ClientError: {}", e),
             NotifyError::NoneCSSSelector => write!(f, "NoneCSSSelector"),
             NotifyError::NonePage => write!(f, "NonePage"),
             NotifyError::RateLimit => write!(f, "RateLimit"),
+            NotifyError::ServerError(e) => write!(f, "ServerError: {}", e),
+            NotifyError::BadStatus(e) => write!(f, "BadStatus: {}", e),
         }
     }
 }

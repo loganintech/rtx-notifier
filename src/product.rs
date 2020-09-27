@@ -102,6 +102,7 @@ impl Product {
             Product::Evga(Some(ProductDetails { page, .. }))
             | Product::NewEgg(Some(ProductDetails { page, .. }))
             | Product::BestBuy(ProductDetails { page, .. })
+            | Product::BnH(ProductDetails { page, .. })
             | Product::Nvidia(ProductDetails { page, .. }) => Ok(page),
             _ => Err(NotifyError::NoPage),
         }
@@ -113,6 +114,7 @@ impl Product {
         match self {
             Product::Evga(Some(ProductDetails { css_selector: Some(css_selector), .. }))
             | Product::NewEgg(Some(ProductDetails { css_selector: Some(css_selector), .. }))
+            | Product::BnH(ProductDetails { css_selector: Some(css_selector), .. })
             | Product::BestBuy(ProductDetails { css_selector: Some(css_selector), .. }) => {
                 Ok(css_selector.as_str())
             }

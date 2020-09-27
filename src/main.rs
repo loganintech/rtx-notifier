@@ -99,7 +99,7 @@ async fn main() -> Result<(), NotifyError> {
         }
         // Otherwise, delay for the rest of the 30 second cycle
         tokio::time::delay_for(std::time::Duration::from_secs(
-            10u64.saturating_sub(runtime as u64),
+            30u64.saturating_sub(runtime as u64),
         ))
             .await;
     }

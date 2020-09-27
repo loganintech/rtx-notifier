@@ -33,7 +33,7 @@ pub async fn send_webhook(product: &Product, url: &str) -> Result<(), NotifyErro
 
     let status = res.status();
     if !status.is_success() || status.is_server_error() || status.is_client_error() {
-        return Err(NotifyError::WebClientError);
+        return Err(NotifyError::ClientError(status));
     }
 
     println!("Sent discord webhook to {}\nPayload: {}", message, payload);
