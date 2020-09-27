@@ -36,12 +36,12 @@ impl ProductDetails {
 }
 
 #[derive(Eq, PartialEq, Clone, Hash, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "lowercase")]
 pub enum Product {
     Evga(Option<ProductDetails>),
     NewEgg(Option<ProductDetails>),
     BestBuy(ProductDetails),
-    FE(ProductDetails),
+    Nvidia(ProductDetails),
 }
 
 impl Product {
@@ -96,7 +96,7 @@ impl Product {
             Product::Evga(Some(ProductDetails { page, .. }))
             | Product::NewEgg(Some(ProductDetails { page, .. }))
             | Product::BestBuy(ProductDetails { page, .. })
-            | Product::FE(ProductDetails { page, .. }) => Ok(page),
+            | Product::Nvidia(ProductDetails { page, .. }) => Ok(page),
             _ => Err(NotifyError::NoPage),
         }
     }
@@ -120,7 +120,7 @@ impl Product {
         match self {
             Evga(_) => "evga",
             NewEgg(_) => "newegg",
-            FE(_) => "nvidia",
+            Nvidia(_) => "nvidia",
             BestBuy(_) => "bestbuy",
         }
     }
@@ -139,7 +139,7 @@ impl Product {
             ))),
             "evga" => Some(Product::Evga(None)),
             "newegg" => Some(Product::NewEgg(None)),
-            "nvidia" => Some(Product::FE(ProductDetails::new_from_product_and_page(product, page))),
+            "nvidia" => Some(Product::Nvidia(ProductDetails::new_from_product_and_page(product, page))),
             _ => None,
         }
     }
@@ -156,7 +156,7 @@ impl Product {
             Product::BestBuy(ProductDetails { product, page, .. }) => {
                 format!("Bestbuy has {} for sale at {}", product, page)
             }
-            Product::FE(ProductDetails { product, page, .. }) => format!("Nvidia has {} for sale at {}", product, page),
+            Product::Nvidia(ProductDetails { product, page, .. }) => format!("Nvidia has {} for sale at {}", product, page),
             Product::Evga(None) => "EVGA has new products!".to_string(),
             Product::NewEgg(None) => "NewEgg has new products!".to_string(),
         }
