@@ -26,7 +26,7 @@ pub trait ScrapingProvider<'a> {
     async fn handle_response(
         &'a self,
         resp: reqwest::Response,
-        details: &Product,
+        details: &'a Product,
     ) -> Result<Product, NotifyError>;
 
     async fn is_available(&'a self, product: &'a Product) -> Result<Product, NotifyError> {

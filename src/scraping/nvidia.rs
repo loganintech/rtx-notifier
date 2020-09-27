@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use lazy_static::lazy_static;
 
 use crate::{
     error::NotifyError,
@@ -17,7 +16,7 @@ impl <'a> ScrapingProvider<'a> for NvidiaScraper {
         &'a self,
         resp: reqwest::Response,
         product: &'a Product,
-    ) -> Result<&'a Product, NotifyError> {
+    ) -> Result<Product, NotifyError> {
         let text = resp.text().await.map_err(|_| NotifyError::HTMLParseFailed)?;
 
         // If we find the out of stock HTML, we didn't find a product
@@ -25,6 +24,6 @@ impl <'a> ScrapingProvider<'a> for NvidiaScraper {
             return Err(NotifyError::NoProductFound);
         }
 
-        Ok(product)
+        Ok(product.clone())
     }
 }
