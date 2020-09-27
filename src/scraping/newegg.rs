@@ -21,7 +21,7 @@ impl<'a> ScrapingProvider<'a> for NeweggScraper {
     async fn handle_response(
         &'a self,
         resp: reqwest::Response,
-        details: &'a ProductDetails,
+        product: &Product,
     ) -> Result<Product, NotifyError> {
         let resp = resp
             .text()
