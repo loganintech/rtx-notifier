@@ -17,6 +17,8 @@ pub enum NotifyError {
     // Config Errors
     ConfigLoad(std::io::Error),
     ConfigParse(serde_json::Error),
+    NoneCSSSelector,
+    NonePage,
 
     // Web Errors
     WebRequestFailed(reqwest::Error),
@@ -24,6 +26,7 @@ pub enum NotifyError {
     NoProductFound,
     HTMLParseFailed,
     NoPage,
+    RateLimit,
 
     // OS Command Errors
     CommandErr(std::io::Error),
@@ -50,6 +53,9 @@ impl fmt::Display for NotifyError {
             NotifyError::CommandResult(e) => write!(f, "CommandResult: {}", e),
             NotifyError::NoPage => write!(f, "NoPage"),
             NotifyError::WebClientError => write!(f, "WebClientError"),
+            NotifyError::NoneCSSSelector => write!(f, "NoneCSSSelector"),
+            NotifyError::NonePage => write!(f, "NonePage"),
+            NotifyError::RateLimit => write!(f, "RateLimit"),
         }
     }
 }

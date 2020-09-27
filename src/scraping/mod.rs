@@ -1,34 +1,42 @@
 use std::collections::HashSet;
 
 use async_trait::async_trait;
+use chrono::{Local, Duration};
 
 use crate::error::NotifyError;
-use crate::product::{Product, ProductDetails};
 use crate::Notifier;
+use crate::product::Product;
+use reqwest::StatusCode;
 
 pub mod bestbuy;
 pub mod evga;
 pub mod newegg;
+pub mod nvidia;
 
 #[async_trait]
 pub trait ScrapingProvider<'a> {
     async fn get_request(
         &'a self,
-        details: &'a ProductDetails,
+        product: &'a Product,
     ) -> Result<reqwest::Response, NotifyError> {
-        reqwest::get(&details.page)
+        reqwest::get(product.get_url()?)
             .await
             .map_err(NotifyError::WebRequestFailed)
     }
     async fn handle_response(
         &'a self,
         resp: reqwest::Response,
-        details: &'a ProductDetails,
+        details: &Product,
     ) -> Result<Product, NotifyError>;
 
-    async fn is_available(&'a self, details: &'a ProductDetails) -> Result<Product, NotifyError> {
-        let resp = self.get_request(details).await?;
+    async fn is_available(&'a self, product: &'a Product) -> Result<Product, NotifyError> {
+        let resp = self.get_request(product).await?;
         let status = resp.status();
+
+        // If we're being rate limited
+        if status == StatusCode::from_u16(429).unwrap() {
+            return Err(NotifyError::RateLimit);
+        }
 
         if !status.is_success() || status.is_server_error() {
             return Err(NotifyError::NoPage);
@@ -38,13 +46,17 @@ pub trait ScrapingProvider<'a> {
             return Err(NotifyError::WebClientError);
         }
 
-        self.handle_response(resp, details).await
+        self.handle_response(resp, product).await
     }
 }
 
 pub async fn get_providers_from_scraping(
     notifier: &mut Notifier,
 ) -> Result<HashSet<Product>, NotifyError> {
+    if !notifier.config.application_config.should_scrape() {
+        return Ok(HashSet::new());
+    }
+
     let mut futs = vec![];
     for page in &notifier.config.products {
         futs.push(page.is_available());
@@ -60,6 +72,7 @@ pub async fn get_providers_from_scraping(
                     eprintln!("Duplicate provider found.");
                 }
             }
+            Err(NotifyError::RateLimit) => notifier.config.application_config.scraping_timeout = Some(Local::now() + Duration::minutes(5)),
             Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
             _ => {}
         }

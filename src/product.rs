@@ -4,11 +4,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::NotifyError,
-    notifier::{discord, twilio},
     scraping::{
         bestbuy::BestBuyScraper, evga::EvgaScraper, newegg::NeweggScraper, ScrapingProvider,
     },
-    Notifier,
 };
 
 // This is a workaround for Serde because it doesn't support literals as defaults
@@ -21,22 +19,10 @@ const fn TRUE() -> bool {
 pub struct ProductDetails {
     pub product: String,
     pub page: String,
-    pub product_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub css_selector: Option<String>,
     #[serde(default = "TRUE")]
     pub active: bool,
-}
-
-impl ProductDetails {
-    pub async fn is_available(&self) -> Result<Product, NotifyError> {
-        match self.product_key.as_ref() {
-            "newegg" | "neweggrtx" => NeweggScraper.is_available(self).await,
-            "bestbuy" => BestBuyScraper.is_available(self).await,
-            "evga" | "evgartx" => EvgaScraper.is_available(self).await,
-            _ => Err(NotifyError::NoProductFound),
-        }
-    }
 }
 
 impl ProductDetails {
@@ -50,51 +36,26 @@ impl ProductDetails {
 }
 
 #[derive(Eq, PartialEq, Clone, Hash, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Product {
     Evga(Option<ProductDetails>),
     NewEgg(Option<ProductDetails>),
     BestBuy(ProductDetails),
-    FE(String, String),
+    FE(ProductDetails),
 }
 
 impl Product {
-    pub async fn handle_found_product(&self, notifier: &mut Notifier) -> Result<(), NotifyError> {
-        // If the notifier is configured to open this in a browser
-        if notifier.config.should_open_browser() {
-            // Open the page in a browser
-            self.open_in_browser()?;
+    pub async fn is_available(&self) -> Result<Product, NotifyError> {
+        match self {
+            Product::NewEgg(Some(_)) => NeweggScraper.is_available(self).await,
+            Product::BestBuy(_) => BestBuyScraper.is_available(self).await,
+            Product::Evga(Some(_)) => EvgaScraper.is_available(self).await,
+            _ => Err(NotifyError::NoProductFound),
         }
-
-        if let Some(discord_url) = &notifier.config.application_config.discord_url {
-            discord::send_webhook(self, discord_url).await?
-        }
-
-        let has_twilio_config = notifier.config.has_twilio_config();
-        if has_twilio_config && notifier.config.should_send_notification() {
-            let subscribers = notifier.active_subscribers(self.to_key());
-            let client = notifier.twilio.as_ref().unwrap();
-            for subscriber in subscribers {
-                twilio::send_twilio_message(
-                    self,
-                    client,
-                    subscriber,
-                    notifier
-                        .config
-                        .application_config
-                        .from_phone_number
-                        .as_ref()
-                        .unwrap(),
-                )
-                .await?;
-            }
-        }
-
-        Ok(())
     }
 
+
     fn run_command(&self, command: &str, args: &[&str]) -> Result<(), NotifyError> {
-        // Get the url of the product.rs
-        let url = self.get_url()?;
         // Run the explorer command with the URL as the param
         let mut child = Command::new(command)
             .args(args)
@@ -110,7 +71,7 @@ impl Product {
 
     // If we're using windows
     #[cfg(target_os = "windows")]
-    fn open_in_browser(&self) -> Result<(), NotifyError> {
+    pub fn open_in_browser(&self) -> Result<(), NotifyError> {
         let url = self.get_url()?;
         self.run_command("cmd", &["/C", "start", url])
     }
@@ -135,8 +96,21 @@ impl Product {
             Product::Evga(Some(ProductDetails { page, .. }))
             | Product::NewEgg(Some(ProductDetails { page, .. }))
             | Product::BestBuy(ProductDetails { page, .. })
-            | Product::FE(_, page) => Ok(page),
+            | Product::FE(ProductDetails { page, .. }) => Ok(page),
             _ => Err(NotifyError::NoPage),
+        }
+    }
+
+    // Get the page from the Product
+    pub fn get_css_selector(&self) -> Result<&str, NotifyError> {
+        // Get a reference to the page property of each product.rs type
+        match self {
+            Product::Evga(Some(ProductDetails { css_selector: Some(css_selector), .. }))
+            | Product::NewEgg(Some(ProductDetails { css_selector: Some(css_selector), .. }))
+            | Product::BestBuy(ProductDetails { css_selector: Some(css_selector), .. }) => {
+                Ok(css_selector.as_str())
+            }
+            _ => Err(NotifyError::NoneCSSSelector),
         }
     }
 
@@ -146,7 +120,7 @@ impl Product {
         match self {
             Evga(_) => "evga",
             NewEgg(_) => "newegg",
-            FE(_, _) => "nvidia",
+            FE(_) => "nvidia",
             BestBuy(_) => "bestbuy",
         }
     }
@@ -165,7 +139,7 @@ impl Product {
             ))),
             "evga" => Some(Product::Evga(None)),
             "newegg" => Some(Product::NewEgg(None)),
-            "nvidia" => Some(Product::FE(product, page)),
+            "nvidia" => Some(Product::FE(ProductDetails::new_from_product_and_page(product, page))),
             _ => None,
         }
     }
@@ -182,7 +156,7 @@ impl Product {
             Product::BestBuy(ProductDetails { product, page, .. }) => {
                 format!("Bestbuy has {} for sale at {}", product, page)
             }
-            Product::FE(name, page) => format!("Nvidia has {} for sale at {}", name, page),
+            Product::FE(ProductDetails { product, page, .. }) => format!("Nvidia has {} for sale at {}", product, page),
             Product::Evga(None) => "EVGA has new products!".to_string(),
             Product::NewEgg(None) => "NewEgg has new products!".to_string(),
         }

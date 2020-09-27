@@ -3,7 +3,7 @@ use scraper::{Html, Selector};
 
 use crate::{
     error::NotifyError,
-    product::{Product, ProductDetails},
+    product::Product,
     scraping::ScrapingProvider,
 };
 
@@ -14,7 +14,7 @@ impl<'a> ScrapingProvider<'a> for EvgaScraper {
     async fn handle_response(
         &'a self,
         resp: reqwest::Response,
-        details: &'a ProductDetails,
+        product: &'a Product,
     ) -> Result<Product, NotifyError> {
         let resp = resp
             .text()
@@ -27,10 +27,8 @@ impl<'a> ScrapingProvider<'a> for EvgaScraper {
         let document = Html::parse_document(&resp);
 
         let selector = Selector::parse(
-            &details
-                .css_selector
-                .clone()
-                .unwrap_or_else(|| "".to_string()),
+            &product
+                .get_css_selector()?
         )
         .map_err(|_| NotifyError::HTMLParseFailed)?;
         let mut selected = document.select(&selector);
@@ -44,13 +42,7 @@ impl<'a> ScrapingProvider<'a> for EvgaScraper {
                     .to_ascii_lowercase()
                     .contains("out of stock"))
         {
-            if let Some(product) = Product::from_product(
-                &details.product_key,
-                details.product.clone(),
-                details.page.clone(),
-            ) {
-                return Ok(product);
-            }
+            return Ok(product.clone());
         }
 
         Err(NotifyError::NoProductFound)

@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use config::*;
 use error::NotifyError;
+use product::Product;
 
 mod config;
 mod error;
@@ -42,6 +43,39 @@ impl Notifier {
     pub fn get_from_phone_number(&self) -> Option<&String> {
         self.config.application_config.from_phone_number.as_ref()
     }
+
+    pub async fn handle_found_product(&mut self, product: &Product) -> Result<(), NotifyError> {
+        // If the notifier is configured to open this in a browser
+        if self.config.application_config.should_open_browser() {
+            // Open the page in a browser
+            product.open_in_browser()?;
+        }
+
+        if let Some(discord_url) = &self.config.application_config.discord_url {
+            notifier::discord::send_webhook(product, discord_url).await?
+        }
+
+        if self.config.application_config.has_twilio_config() && self.config.application_config.should_send_notification() {
+            let subscribers = self.active_subscribers(product.to_key());
+            let client = self.twilio.as_ref().unwrap();
+            for subscriber in subscribers {
+                notifier::twilio::send_twilio_message(
+                    product,
+                    client,
+                    subscriber,
+                    self
+                        .config
+                        .application_config
+                        .from_phone_number
+                        .as_ref()
+                        .unwrap(),
+                )
+                    .await?;
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[tokio::main]
@@ -65,7 +99,7 @@ async fn main() -> Result<(), NotifyError> {
         tokio::time::delay_for(std::time::Duration::from_secs(
             30u64.saturating_sub(runtime as u64),
         ))
-        .await;
+            .await;
     }
 
     Ok(())
@@ -82,8 +116,8 @@ async fn run_bot(notifier: &mut Notifier) -> Result<i64, NotifyError> {
     for provider in email_set.iter().chain(scraped_set.iter()) {
         // If we found any providers, send the messages
         // If it results in an error print the error
-        if let Err(e) = provider.handle_found_product(notifier).await {
-            eprintln!("Provider {:?} had issue : {}", provider, e);
+        if let Err(e) = notifier.handle_found_product(product).await {
+            eprintln!("Provider {:?} had issue : {}", product, e);
         } else {
             // If we don't have an error, update the last notification sent timer
             notifier.config.application_config.last_notification_sent = Local::now();

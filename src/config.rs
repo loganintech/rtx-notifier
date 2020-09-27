@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-use crate::product::ProductDetails;
-use crate::Subscriber;
 use crate::{error::NotifyError, Notifier};
+use crate::product::Product;
+use crate::Subscriber;
 
 const CONFIG_FILE_PATH: &str = "./config.json";
 
@@ -17,7 +17,7 @@ const CONFIG_FILE_PATH: &str = "./config.json";
 pub struct Config {
     pub application_config: ApplicationConfig,
     pub subscribers: Vec<Subscriber>,
-    pub products: Vec<ProductDetails>,
+    pub products: Vec<Product>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -35,28 +35,36 @@ pub struct ApplicationConfig {
     pub should_open_browser: bool,
     pub daemon_mode: bool,
     pub discord_url: Option<String>,
+    pub scraping_timeout: Option<DateTime<Local>>,
 }
 
-impl Config {
-    pub fn should_open_browser(&self) -> bool {
-        self.application_config.should_open_browser
-    }
-
+impl ApplicationConfig {
     pub fn should_send_notification(&self) -> bool {
-        self.application_config.last_notification_sent
+        self.last_notification_sent
             < (Local::now() - chrono::Duration::minutes(30))
     }
 
     pub fn has_twilio_config(&self) -> bool {
-        self.application_config.twilio_account_id.is_some()
-            && self.application_config.twilio_auth_token.is_some()
-            && self.application_config.from_phone_number.is_some()
+        self.twilio_account_id.is_some()
+            && self.twilio_auth_token.is_some()
+            && self.from_phone_number.is_some()
     }
 
     pub fn has_imap_config(&self) -> bool {
-        self.application_config.imap_host.is_some()
-            && self.application_config.imap_username.is_some()
-            && self.application_config.imap_password.is_some()
+        self.imap_host.is_some()
+            && self.imap_username.is_some()
+            && self.imap_password.is_some()
+    }
+
+    pub fn should_open_browser(&self) -> bool {
+        self.should_open_browser
+    }
+
+    pub fn should_scrape(&self) -> bool {
+        match self.scraping_timeout {
+            Some(timeout) if timeout < chrono::Local::now() => true,
+            _ => false,
+        }
     }
 }
 
@@ -77,7 +85,7 @@ impl Notifier {
         let config: Config = serde_json::from_str(&buf).map_err(NotifyError::ConfigParse)?;
 
         // If the imap config exists, get the imap session
-        let imap = if config.has_imap_config() {
+        let imap = if config.application_config.has_imap_config() {
             Some(get_imap(
                 &config.application_config.imap_host.as_ref().unwrap(),
                 &config.application_config.imap_username.as_ref().unwrap(),
@@ -88,7 +96,7 @@ impl Notifier {
         };
 
         // If we have a twilio config create a client
-        let twilio = if config.has_twilio_config() {
+        let twilio = if config.application_config.has_twilio_config() {
             Some(twilio::Client::new(
                 &config
                     .application_config
@@ -147,6 +155,6 @@ pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {
             .map_err(|_| NotifyError::ConfigUpdate)?
             .as_bytes(),
     )
-    .await
-    .map_err(|_| NotifyError::ConfigUpdate)
+        .await
+        .map_err(|_| NotifyError::ConfigUpdate)
 }

@@ -4,7 +4,7 @@ use regex::Regex;
 
 use crate::{
     error::NotifyError,
-    product::{Product, ProductDetails},
+    product::Product,
     scraping::ScrapingProvider,
 };
 
@@ -44,11 +44,7 @@ impl<'a> ScrapingProvider<'a> for NeweggScraper {
 
             // Then look for the JSON property that shows it's in stock. Yes, we could serialize this but why bother right now
             if product_resp.contains(r#""instock":true"#) {
-                return Ok(Product::NewEgg(Some(ProductDetails {
-                    product: details.product.clone(),
-                    page: details.page.clone(),
-                    ..ProductDetails::default()
-                })));
+                return Ok(product.clone());
             }
         }
 

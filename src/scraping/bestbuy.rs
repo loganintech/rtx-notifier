@@ -5,7 +5,7 @@ use reqwest::header::HeaderMap;
 
 use crate::{
     error::NotifyError,
-    product::{Product, ProductDetails},
+    product::Product,
     scraping::ScrapingProvider,
 };
 
@@ -24,7 +24,7 @@ pub struct BestBuyScraper;
 impl<'a> ScrapingProvider<'a> for BestBuyScraper {
     async fn get_request(
         &'a self,
-        details: &'a ProductDetails,
+        product: &'a Product,
     ) -> Result<reqwest::Response, NotifyError> {
         // Create a new client, can't use the reqwest::get() because we need headers
         let client = reqwest::Client::new();
@@ -34,7 +34,7 @@ impl<'a> ScrapingProvider<'a> for BestBuyScraper {
 
         // Load the webpage
         client
-            .get(&details.page)
+            .get(product.get_url()?)
             .headers(headers)
             .send()
             .await
@@ -44,19 +44,16 @@ impl<'a> ScrapingProvider<'a> for BestBuyScraper {
     async fn handle_response(
         &'a self,
         resp: reqwest::Response,
-        details: &'a ProductDetails,
+        product: &'a Product,
     ) -> Result<Product, NotifyError> {
         let resp = resp
             .text()
             .await
             .map_err(|_| NotifyError::HTMLParseFailed)?;
+
         // If we can't find the sold out button, we're back in stock
         if BUTTON_REGEX.captures_iter(&resp).next().is_none() {
-            return Ok(Product::BestBuy(ProductDetails {
-                product: details.product.clone(),
-                page: details.page.clone(),
-                ..ProductDetails::default()
-            }));
+            return Ok(product.clone());
         }
 
         Err(NotifyError::NoProductFound)
