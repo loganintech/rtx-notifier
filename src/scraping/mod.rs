@@ -6,12 +6,13 @@ use chrono::{Local, Duration};
 use crate::error::NotifyError;
 use crate::Notifier;
 use crate::product::Product;
-use reqwest::StatusCode;
+use reqwest::{StatusCode, header::HeaderMap};
 
 pub mod bestbuy;
 pub mod evga;
 pub mod newegg;
 pub mod nvidia;
+pub mod bnh;
 
 #[async_trait]
 pub trait ScrapingProvider<'a> {
@@ -19,7 +20,17 @@ pub trait ScrapingProvider<'a> {
         &'a self,
         product: &'a Product,
     ) -> Result<reqwest::Response, NotifyError> {
-        reqwest::get(product.get_url()?)
+        // Create a new client, can't use the reqwest::get() because we need headers
+        let client = reqwest::Client::new();
+        let mut headers = HeaderMap::new();
+        // Add some headers for a user agent, otherwise the host refuses connection
+        headers.insert("User-Agent", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0".parse().unwrap());
+
+        // Load the webpage
+        client
+            .get(product.get_url()?)
+            .headers(headers)
+            .send()
             .await
             .map_err(NotifyError::WebRequestFailed)
     }

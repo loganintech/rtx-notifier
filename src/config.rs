@@ -61,7 +61,7 @@ impl ApplicationConfig {
     }
 
     pub fn should_scrape(&self) -> bool {
-        matches!(self.scraping_timeout, Some(timeout) if timeout < chrono::Local::now())
+        matches!(self.scraping_timeout, Some(timeout) if timeout < chrono::Local::now()) || self.scraping_timeout.is_none()
     }
 }
 

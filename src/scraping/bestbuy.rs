@@ -9,7 +9,7 @@ use crate::{
     scraping::ScrapingProvider,
 };
 
-// LOok for the div that says it's Sold Out, case insensitive. Give it a bit of before and after HTML so that it doesn't false match on other elements
+// Look for the div that says it's Sold Out, case insensitive. Give it a bit of before and after HTML so that it doesn't false match on other elements
 lazy_static! {
     static ref BUTTON_REGEX: Regex =
         RegexBuilder::new(r#"<div class="fulfillment.+Sold Out</button></div></div>"#)

@@ -5,7 +5,11 @@ use serde::{Deserialize, Serialize};
 use crate::{
     error::NotifyError,
     scraping::{
-        bestbuy::BestBuyScraper, evga::EvgaScraper, newegg::NeweggScraper, ScrapingProvider,
+        bestbuy::BestBuyScraper,
+        evga::EvgaScraper,
+        newegg::NeweggScraper,
+        bnh::BnHScraper,
+        ScrapingProvider,
     },
 };
 
@@ -42,6 +46,7 @@ pub enum Product {
     NewEgg(Option<ProductDetails>),
     BestBuy(ProductDetails),
     Nvidia(ProductDetails),
+    BnH(ProductDetails),
 }
 
 impl Product {
@@ -50,6 +55,7 @@ impl Product {
             Product::NewEgg(Some(_)) => NeweggScraper.is_available(self).await,
             Product::BestBuy(_) => BestBuyScraper.is_available(self).await,
             Product::Evga(Some(_)) => EvgaScraper.is_available(self).await,
+            Product::BnH(_) => BnHScraper.is_available(self).await,
             _ => Err(NotifyError::NoProductFound),
         }
     }
@@ -122,6 +128,7 @@ impl Product {
             NewEgg(_) => "newegg",
             Nvidia(_) => "nvidia",
             BestBuy(_) => "bestbuy",
+            BnH(_) => "bnh",
         }
     }
 
@@ -140,6 +147,7 @@ impl Product {
             "evga" => Some(Product::Evga(None)),
             "newegg" => Some(Product::NewEgg(None)),
             "nvidia" => Some(Product::Nvidia(ProductDetails::new_from_product_and_page(product, page))),
+            "bnh" => Some(Product::BnH(ProductDetails::new_from_product_and_page(product, page))),
             _ => None,
         }
     }
@@ -157,6 +165,7 @@ impl Product {
                 format!("Bestbuy has {} for sale at {}", product, page)
             }
             Product::Nvidia(ProductDetails { product, page, .. }) => format!("Nvidia has {} for sale at {}", product, page),
+            Product::BnH(ProductDetails { product, page, .. }) => format!("BnH has {} for sale at {}", product, page),
             Product::Evga(None) => "EVGA has new products!".to_string(),
             Product::NewEgg(None) => "NewEgg has new products!".to_string(),
         }
