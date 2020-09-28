@@ -55,7 +55,9 @@ impl Notifier {
             notifier::discord::send_webhook(product, discord_url).await?
         }
 
-        if self.config.application_config.has_twilio_config() && self.config.application_config.should_send_notification() {
+        if self.config.application_config.has_twilio_config()
+            && self.config.application_config.should_send_notification()
+        {
             let subscribers = self.active_subscribers(product.to_key());
             let client = self.twilio.as_ref().unwrap();
             for subscriber in subscribers {
@@ -63,14 +65,13 @@ impl Notifier {
                     product,
                     client,
                     subscriber,
-                    self
-                        .config
+                    self.config
                         .application_config
                         .from_phone_number
                         .as_ref()
                         .unwrap(),
                 )
-                    .await?;
+                .await?;
             }
         }
 
@@ -101,7 +102,7 @@ async fn main() -> Result<(), NotifyError> {
         tokio::time::delay_for(std::time::Duration::from_secs(
             30u64.saturating_sub(runtime as u64),
         ))
-            .await;
+        .await;
     }
 
     Ok(())

@@ -1,30 +1,33 @@
 use std::collections::HashSet;
 
 use async_trait::async_trait;
-use chrono::{Local, Duration};
+use chrono::{Duration, Local};
 
 use crate::error::NotifyError;
-use crate::Notifier;
 use crate::product::Product;
-use reqwest::{StatusCode, header::HeaderMap};
+use crate::Notifier;
+use reqwest::{header::HeaderMap, StatusCode};
 
+pub mod amazon;
 pub mod bestbuy;
+pub mod bnh;
 pub mod evga;
 pub mod newegg;
 pub mod nvidia;
-pub mod bnh;
 
 #[async_trait]
 pub trait ScrapingProvider<'a> {
-    async fn get_request(
-        &'a self,
-        product: &'a Product,
-    ) -> Result<reqwest::Response, NotifyError> {
+    async fn get_request(&'a self, product: &'a Product) -> Result<reqwest::Response, NotifyError> {
         // Create a new client, can't use the reqwest::get() because we need headers
         let client = reqwest::Client::new();
         let mut headers = HeaderMap::new();
         // Add some headers for a user agent, otherwise the host refuses connection
-        headers.insert("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0".parse().unwrap());
+        headers.insert(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0"
+                .parse()
+                .unwrap(),
+        );
 
         // Load the webpage
         client
@@ -88,9 +91,12 @@ pub async fn get_providers_from_scraping(
                     eprintln!("Duplicate provider found.");
                 }
             }
-            Err(NotifyError::RateLimit) => notifier.config.application_config.scraping_timeout = Some(Local::now() + Duration::minutes(5)),
+            Err(NotifyError::RateLimit) => {
+                notifier.config.application_config.scraping_timeout =
+                    Some(Local::now() + Duration::minutes(5))
+            }
             Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
-            Err(NotifyError::NoProductFound) => {},
+            Err(NotifyError::NoProductFound) => {}
             Err(e) => eprintln!("Error: {}", e),
         }
     }

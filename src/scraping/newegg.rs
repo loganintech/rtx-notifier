@@ -2,11 +2,7 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use crate::{
-    error::NotifyError,
-    product::Product,
-    scraping::ScrapingProvider,
-};
+use crate::{error::NotifyError, product::Product, scraping::ScrapingProvider};
 
 lazy_static! {
     // Look for the javascript tag that loads the raw product.rs data from their webservers

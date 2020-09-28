@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-use crate::{error::NotifyError, Notifier};
 use crate::product::Product;
 use crate::Subscriber;
+use crate::{error::NotifyError, Notifier};
 
 const CONFIG_FILE_PATH: &str = "./config.json";
 
@@ -40,8 +40,7 @@ pub struct ApplicationConfig {
 
 impl ApplicationConfig {
     pub fn should_send_notification(&self) -> bool {
-        self.last_notification_sent
-            < (Local::now() - chrono::Duration::minutes(30))
+        self.last_notification_sent < (Local::now() - chrono::Duration::minutes(30))
     }
 
     pub fn has_twilio_config(&self) -> bool {
@@ -51,9 +50,7 @@ impl ApplicationConfig {
     }
 
     pub fn has_imap_config(&self) -> bool {
-        self.imap_host.is_some()
-            && self.imap_username.is_some()
-            && self.imap_password.is_some()
+        self.imap_host.is_some() && self.imap_username.is_some() && self.imap_password.is_some()
     }
 
     pub fn should_open_browser(&self) -> bool {
@@ -61,7 +58,8 @@ impl ApplicationConfig {
     }
 
     pub fn should_scrape(&self) -> bool {
-        matches!(self.scraping_timeout, Some(timeout) if timeout < chrono::Local::now()) || self.scraping_timeout.is_none()
+        matches!(self.scraping_timeout, Some(timeout) if timeout < chrono::Local::now())
+            || self.scraping_timeout.is_none()
     }
 }
 
@@ -152,6 +150,6 @@ pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {
             .map_err(|_| NotifyError::ConfigUpdate)?
             .as_bytes(),
     )
-        .await
-        .map_err(|_| NotifyError::ConfigUpdate)
+    .await
+    .map_err(|_| NotifyError::ConfigUpdate)
 }

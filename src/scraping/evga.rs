@@ -1,11 +1,7 @@
 use async_trait::async_trait;
 use scraper::{Html, Selector};
 
-use crate::{
-    error::NotifyError,
-    product::Product,
-    scraping::ScrapingProvider,
-};
+use crate::{error::NotifyError, product::Product, scraping::ScrapingProvider};
 
 pub struct EvgaScraper;
 
@@ -26,11 +22,8 @@ impl<'a> ScrapingProvider<'a> for EvgaScraper {
 
         let document = Html::parse_document(&resp);
 
-        let selector = Selector::parse(
-            &product
-                .get_css_selector()?
-        )
-        .map_err(|_| NotifyError::HTMLParseFailed)?;
+        let selector = Selector::parse(&product.get_css_selector()?)
+            .map_err(|_| NotifyError::HTMLParseFailed)?;
         let mut selected = document.select(&selector);
         let found = selected.next();
 

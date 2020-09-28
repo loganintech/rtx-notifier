@@ -3,11 +3,7 @@ use lazy_static::lazy_static;
 use regex::{Regex, RegexBuilder};
 use reqwest::header::HeaderMap;
 
-use crate::{
-    error::NotifyError,
-    product::Product,
-    scraping::ScrapingProvider,
-};
+use crate::{error::NotifyError, product::Product, scraping::ScrapingProvider};
 
 // Look for the div that says it's Sold Out, case insensitive. Give it a bit of before and after HTML so that it doesn't false match on other elements
 lazy_static! {
@@ -22,10 +18,7 @@ pub struct BestBuyScraper;
 
 #[async_trait]
 impl<'a> ScrapingProvider<'a> for BestBuyScraper {
-    async fn get_request(
-        &'a self,
-        product: &'a Product,
-    ) -> Result<reqwest::Response, NotifyError> {
+    async fn get_request(&'a self, product: &'a Product) -> Result<reqwest::Response, NotifyError> {
         // Create a new client, can't use the reqwest::get() because we need headers
         let client = reqwest::Client::new();
         let mut headers = HeaderMap::new();

@@ -1,10 +1,6 @@
 use async_trait::async_trait;
 
-use crate::{
-    error::NotifyError,
-    product::Product,
-    scraping::ScrapingProvider,
-};
+use crate::{error::NotifyError, product::Product, scraping::ScrapingProvider};
 
 pub struct BnHScraper;
 
@@ -20,7 +16,9 @@ impl<'a> ScrapingProvider<'a> for BnHScraper {
             .await
             .map_err(|_| NotifyError::HTMLParseFailed)?;
 
-        if resp.contains(r#"showNotifyWhenAvailable": false"#) && resp.contains(r#"showNotifyWhenInStock": false"#) {
+        if resp.contains(r#"showNotifyWhenAvailable": false"#)
+            && resp.contains(r#"showNotifyWhenInStock": false"#)
+        {
             return Ok(product.clone());
         }
 

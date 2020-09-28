@@ -29,6 +29,7 @@ pub enum NotifyError {
     ClientError(reqwest::StatusCode),
     ServerError(reqwest::StatusCode),
     BadStatus(reqwest::StatusCode),
+    DecompressionError(std::io::Error),
 
     // OS Command Errors
     CommandErr(std::io::Error),
@@ -60,6 +61,7 @@ impl fmt::Display for NotifyError {
             NotifyError::RateLimit => write!(f, "RateLimit"),
             NotifyError::ServerError(e) => write!(f, "ServerError: {}", e),
             NotifyError::BadStatus(e) => write!(f, "BadStatus: {}", e),
+            NotifyError::DecompressionError(e) => write!(f, "DecompressionError: {}", e),
         }
     }
 }
