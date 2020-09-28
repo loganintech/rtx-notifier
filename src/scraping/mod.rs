@@ -2,11 +2,11 @@ use std::collections::HashSet;
 
 use async_trait::async_trait;
 use chrono::{Duration, Local};
+use reqwest::header::HeaderMap;
 
 use crate::error::NotifyError;
-use crate::product::Product;
 use crate::Notifier;
-use reqwest::header::HeaderMap;
+use crate::product::Product;
 
 pub mod amazon;
 pub mod bestbuy;
@@ -50,7 +50,10 @@ pub trait ScrapingProvider<'a> {
 
         // If we're being rate limited
         //https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
-        if status.as_u16() == 429 {
+        if status.as_u16() == 429
+            || (product.to_key() == "bnh"
+            && resp.url().as_str() == "https://site-not-available.bhphotovideo.com/500Error")
+        {
             return Err(NotifyError::RateLimit);
         }
 
@@ -73,20 +76,22 @@ pub trait ScrapingProvider<'a> {
 pub async fn get_providers_from_scraping(
     notifier: &mut Notifier,
 ) -> Result<HashSet<Product>, NotifyError> {
-    if !notifier.config.application_config.should_scrape() {
-        return Ok(HashSet::new());
-    }
-
     let mut futs = vec![];
-    for page in &notifier.config.products {
-        futs.push(page.is_available());
+    let active_products = notifier
+        .config
+        .products
+        .iter()
+        .filter(|p| p.is_active() && notifier.config.application_config.should_scrape(p.to_key()))
+        .collect::<Vec<&Product>>();
+    for product in &active_products {
+        futs.push(product.is_available());
     }
 
     let joined = futures::future::join_all(futs).await;
 
     let mut providers = HashSet::new();
     for (i, res) in joined.into_iter().enumerate() {
-        let product = &notifier.config.products[i];
+        let product = active_products[i];
         match res {
             Ok(res) => {
                 if !providers.insert(res) {
@@ -94,9 +99,15 @@ pub async fn get_providers_from_scraping(
                 }
             }
             Err(NotifyError::RateLimit) => {
-                println!("Product: {:?}", product);
-                notifier.config.application_config.scraping_timeout =
-                    Some(Local::now() + Duration::minutes(5))
+                println!("Rate Limiting Hit: {:?}", product);
+
+                if notifier.config.application_config.ratelimit_keys.is_some() {
+                    notifier.config.application_config.ratelimit_keys.as_mut().unwrap().insert(product.to_key().to_string(), Local::now() + Duration::minutes(2));
+                } else {
+                    let mut map = std::collections::HashMap::new();
+                    map.insert(product.to_key().to_string(), Local::now() + Duration::minutes(2));
+                    notifier.config.application_config.ratelimit_keys = Some(map);
+                }
             }
             Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
             Err(NotifyError::NoProductFound) => {}

@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -104,6 +105,22 @@ impl Product {
             | Product::Amazon(ProductDetails { page, .. })
             | Product::Nvidia(ProductDetails { page, .. }) => Ok(page),
             _ => Err(NotifyError::NoPage),
+        }
+    }
+
+    pub fn is_active(&self) -> bool {
+        // Get a reference to the page property of each product.rs type
+        match self {
+            Product::Evga(Some(ProductDetails { active, .. }))
+            | Product::NewEgg(Some(ProductDetails { active, .. }))
+            | Product::BestBuy(ProductDetails { active, .. })
+            | Product::Nvidia(ProductDetails { active, .. }) => *active,
+            // Some websites have strict rate limiting, this will hopefully prevent that
+            Product::BnH(ProductDetails { active, .. })
+            | Product::Amazon(ProductDetails { active, .. }) => {
+                *active && thread_rng().gen_bool(0.3)
+            }
+            _ => false,
         }
     }
 

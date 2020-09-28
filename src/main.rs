@@ -92,7 +92,7 @@ async fn main() -> Result<(), NotifyError> {
             }
         };
 
-        let wait_time = 60u64.saturating_sub(runtime as u64);
+        let wait_time = 30u64.saturating_sub(runtime as u64);
         println!("Took {} seconds, waiting {}s.", runtime, wait_time);
 
         // If we're not in daemon mode, break out of this loop
@@ -119,7 +119,7 @@ async fn run_bot(notifier: &mut Notifier) -> Result<i64, NotifyError> {
         // If we found any providers, send the messages
         // If it results in an error print the error
         if let Err(e) = notifier.handle_found_product(product).await {
-            eprintln!("Provider {:?} had issue : {}", product, e);
+            eprintln!("Provider {:?} had issue: {}", product, e);
         } else {
             // If we don't have an error, update the last notification sent timer
             notifier.config.application_config.last_notification_sent = Local::now();

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::net::TcpStream;
 
 use chrono::{DateTime, Local};
@@ -7,9 +8,9 @@ use serde::{Deserialize, Serialize};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
+use crate::{error::NotifyError, Notifier};
 use crate::product::Product;
 use crate::Subscriber;
-use crate::{error::NotifyError, Notifier};
 
 const CONFIG_FILE_PATH: &str = "./config.json";
 
@@ -36,6 +37,7 @@ pub struct ApplicationConfig {
     pub daemon_mode: bool,
     pub discord_url: Option<String>,
     pub scraping_timeout: Option<DateTime<Local>>,
+    pub ratelimit_keys: Option<HashMap<String, DateTime<Local>>>,
 }
 
 impl ApplicationConfig {
@@ -57,9 +59,22 @@ impl ApplicationConfig {
         self.should_open_browser
     }
 
-    pub fn should_scrape(&self) -> bool {
-        matches!(self.scraping_timeout, Some(timeout) if timeout < chrono::Local::now())
-            || self.scraping_timeout.is_none()
+    pub fn should_scrape(&self, key: &str) -> bool {
+        let now = chrono::Local::now();
+        let provider_ratelimited = match &self.ratelimit_keys {
+            Some(map) => match map.get(key) {
+                // If the timeout is in the past, we aren't ratelimited
+                 Some(timeout) if timeout < &now => false,
+                // If we don't have a timeout, we aren't ratelimited
+                None => false,
+                // If we have a timeout but it's in the future, we're ratelimited
+                _ => true,
+            },
+            // If we don't have a map of ratelimited providers, we're not ratelimited
+            _ => false,
+        };
+        matches!(self.scraping_timeout, Some(timeout) if timeout < now)
+            || self.scraping_timeout.is_none() || !provider_ratelimited
     }
 }
 
@@ -150,6 +165,6 @@ pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {
             .map_err(|_| NotifyError::ConfigUpdate)?
             .as_bytes(),
     )
-    .await
-    .map_err(|_| NotifyError::ConfigUpdate)
+        .await
+        .map_err(|_| NotifyError::ConfigUpdate)
 }

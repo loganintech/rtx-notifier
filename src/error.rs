@@ -30,6 +30,7 @@ pub enum NotifyError {
     ServerError(reqwest::StatusCode),
     BadStatus(reqwest::StatusCode),
     DecompressionError(std::io::Error),
+    EncodingError(std::string::FromUtf8Error),
 
     // OS Command Errors
     CommandErr(std::io::Error),
@@ -64,6 +65,7 @@ impl fmt::Display for NotifyError {
             NotifyError::BadStatus(e) => write!(f, "BadStatus: {}", e),
             NotifyError::DecompressionError(e) => write!(f, "DecompressionError: {}", e),
             NotifyError::FileIOError(e) => write!(f, "FileIOError: {}", e),
+            NotifyError::EncodingError(e) => write!(f, "EncodingError: {}", e),
         }
     }
 }

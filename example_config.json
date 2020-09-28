@@ -19,6 +19,13 @@
     "daemon_mode": true,
     // Webhook to send to discord
     "discord_url": null,
+    // This delays ALL scraping. It must be set manually
+    "scraping_timeout": "2020-09-28T00:49:28.888712-07:00",
+    // This delays certain providers. These are added when a ratelimit is hit for a product
+    "ratelimit_keys": {
+      "bnh": "2020-09-28T00:49:28.888712-07:00",
+      "amazon": "2020-09-28T00:52:28.888712-07:00"
+    }
   },
   "subscribers": [
     {
