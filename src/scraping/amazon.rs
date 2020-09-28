@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use flate2::read::GzDecoder;
 use lazy_static::lazy_static;
 use regex::{Regex, RegexBuilder};
+use tokio::io::AsyncWriteExt;
 
 use crate::{error::NotifyError, product::Product, scraping::ScrapingProvider};
 
@@ -27,7 +28,7 @@ impl<'a> ScrapingProvider<'a> for AmazonScraper {
             .await
             .map_err(|_| NotifyError::HTMLParseFailed)?;
 
-        let bytes = resp.slice(0..).to_vec();
+        let bytes = resp.slice(..).to_vec();
         let mut decoder = GzDecoder::new(bytes.as_slice());
         let mut resp = String::new();
 
@@ -35,10 +36,21 @@ impl<'a> ScrapingProvider<'a> for AmazonScraper {
             return Err(NotifyError::DecompressionError(e));
         }
 
-        if !resp
-            .contains(r#"<span class="a-color-price a-text-bold">Currently unavailable.</span>"#)
-            && !OTHER_SELLER_REGEX.is_match(&resp)
+        if !resp.contains(r#"Currently unavailable.</span>"#) && !OTHER_SELLER_REGEX.is_match(&resp)
         {
+            let mut foptions = tokio::fs::OpenOptions::new();
+            let foptions = foptions.create(true).write(true).append(true);
+            let mut file = foptions
+                .open(format!(
+                    "{}-amazon-log.txt",
+                    chrono::Local::now().to_rfc3339(),
+                ))
+                .await
+                .map_err(NotifyError::FileIOError)?;
+            file.write_all(resp.as_bytes())
+                .await
+                .map_err(NotifyError::FileIOError)?;
+
             return Ok(product.clone());
         }
 

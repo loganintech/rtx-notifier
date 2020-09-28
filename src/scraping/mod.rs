@@ -6,7 +6,7 @@ use chrono::{Duration, Local};
 use crate::error::NotifyError;
 use crate::product::Product;
 use crate::Notifier;
-use reqwest::{header::HeaderMap, StatusCode};
+use reqwest::header::HeaderMap;
 
 pub mod amazon;
 pub mod bestbuy;
@@ -49,7 +49,8 @@ pub trait ScrapingProvider<'a> {
         let status = resp.status();
 
         // If we're being rate limited
-        if status == StatusCode::from_u16(429).unwrap() {
+        //https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+        if status.as_u16() == 429 {
             return Err(NotifyError::RateLimit);
         }
 
@@ -84,7 +85,8 @@ pub async fn get_providers_from_scraping(
     let joined = futures::future::join_all(futs).await;
 
     let mut providers = HashSet::new();
-    for res in joined {
+    for (i, res) in joined.into_iter().enumerate() {
+        let product = &notifier.config.products[i];
         match res {
             Ok(res) => {
                 if !providers.insert(res) {
@@ -92,12 +94,16 @@ pub async fn get_providers_from_scraping(
                 }
             }
             Err(NotifyError::RateLimit) => {
+                println!("Product: {:?}", product);
                 notifier.config.application_config.scraping_timeout =
                     Some(Local::now() + Duration::minutes(5))
             }
             Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
             Err(NotifyError::NoProductFound) => {}
-            Err(e) => eprintln!("Error: {}", e),
+            Err(e) => eprintln!(
+                "==========\nError Happened: {}\n====\nWith Product: {:?}\n==========",
+                e, product
+            ),
         }
     }
 

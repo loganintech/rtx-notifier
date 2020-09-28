@@ -34,6 +34,7 @@ pub enum NotifyError {
     // OS Command Errors
     CommandErr(std::io::Error),
     CommandResult(i32),
+    FileIOError(std::io::Error),
 }
 
 impl fmt::Display for NotifyError {
@@ -62,6 +63,7 @@ impl fmt::Display for NotifyError {
             NotifyError::ServerError(e) => write!(f, "ServerError: {}", e),
             NotifyError::BadStatus(e) => write!(f, "BadStatus: {}", e),
             NotifyError::DecompressionError(e) => write!(f, "DecompressionError: {}", e),
+            NotifyError::FileIOError(e) => write!(f, "FileIOError: {}", e),
         }
     }
 }

@@ -92,17 +92,16 @@ async fn main() -> Result<(), NotifyError> {
             }
         };
 
-        println!("Took: {}", runtime);
+        let wait_time = 30u64.saturating_sub(runtime as u64);
+        println!("Took {} seconds, waiting {}s.", runtime, wait_time);
 
         // If we're not in daemon mode, break out of this loop
         if !notifier.daemon_mode() {
             break;
         }
+
         // Otherwise, delay for the rest of the 30 second cycle
-        tokio::time::delay_for(std::time::Duration::from_secs(
-            30u64.saturating_sub(runtime as u64),
-        ))
-        .await;
+        tokio::time::delay_for(std::time::Duration::from_secs(wait_time)).await;
     }
 
     Ok(())
