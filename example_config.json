@@ -22,25 +22,6 @@
   },
   "subscribers": [
     {
-      "service": [
-        "evga",
-        "newegg",
-        "bestbuy"
-      ],
-      "to_phone_number": "+15555555555",
-      "active": true
-    },
-    {
-      "service": [
-        "evga",
-        "newegg"
-      ],
-      "to_phone_number": "+15555555554",
-      "active": false
-    }
-  ],
-  "products": [
-    {
       "evga": {
         "product": "EVGA 3090 FTW3 GAMING",
         "page": "https://www.evga.com/products/product.aspx?pn=24G-P5-3985-KR",
@@ -411,6 +392,69 @@
       "bnh": {
         "product": "GIGABYTE 3080 GAMING OC",
         "page": "https://www.bhphotovideo.com/c/product/1593333-REG/gigabyte_gv_n3080gaming_oc_10gd_geforce_rtx_3080_gaming.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "ZOTAC GAMING 3090 Trinity",
+        "page": "https://www.bhphotovideo.com/c/product/1592970-REG/zotac_zt_a30900d_10p_gaming_geforce_rtx_3090.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "MSI 3090 GAMING X TRIO",
+        "page": "https://www.bhphotovideo.com/c/product/1593647-REG/msi_geforce_rtx_3090_gaming.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "MSI 3090 VENTUS 3X",
+        "page": "https://www.bhphotovideo.com/c/product/1593648-REG/msi_geforce_rtx_3090_ventus.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "MSI 3090 GAMING X TRIO Graphic",
+        "page": "https://www.bhphotovideo.com/c/product/1593994-REG/msi_g3090gxt24_geforce_rtx_3090_gaming.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "GIGABYTE 3090 EAGLE OC",
+        "page": "https://www.bhphotovideo.com/c/product/1593334-REG/gigabyte_gv_n3090eagle_oc_24gd_geforce_rtx_3090_eagle.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "MSI 3090 VENTUS 3X",
+        "page": "https://www.bhphotovideo.com/c/product/1593995-REG/msi_g3090v3x24c_geforce_rtx_3090_ventus.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "GIGABYTE 3090 GAMING OC",
+        "page": "https://www.bhphotovideo.com/c/product/1593335-REG/gigabyte_gv_n3090gaming_oc_24gd_geforce_rtx3090_gaming_oc.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "ASUS TUF 3090 GAMING OC",
+        "page": "https://www.bhphotovideo.com/c/product/1594451-REG/asus_90yv0fd1_m0am00_tuf_gaming_geforce_rtx.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "ASUS TUF 3090 GAMING OC Graphic",
+        "page": "https://www.bhphotovideo.com/c/product/1594454-REG/asus_90yv0fd0_m0am00_tuf_gaming_geforce_rtx.html",
         "active": true
       }
     },
