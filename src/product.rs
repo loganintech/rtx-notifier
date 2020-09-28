@@ -82,14 +82,14 @@ impl Product {
 
     // If we're on a mac
     #[cfg(target_os = "macos")]
-    fn open_in_browser(&self) -> Result<(), NotifyError> {
+    pub fn open_in_browser(&self) -> Result<(), NotifyError> {
         let url = self.get_url()?;
         self.run_command("open", &[url])
     }
 
     // If we're not on a mac or windows machine, just succeed without doing anything
     #[cfg(not(any(target_os = "macos", target_os = "windows")))]
-    fn open_in_browser(&self) -> Result<(), NotifyError> {
+    pub fn open_in_browser(&self) -> Result<(), NotifyError> {
         Ok(())
     }
 
