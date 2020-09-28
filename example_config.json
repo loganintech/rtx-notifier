@@ -368,13 +368,218 @@
     {
       "nvidia": {
         "product": "NVIDIA FE 3080",
-        "page": "https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3080"
+        "page": "https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3080",
+        "active": true
       }
     },
     {
       "nvidia": {
         "product": "NVIDIA FE 3090",
-        "page": "https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3080"
+        "page": "https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3080",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "ZOTAC TRINITY 3080",
+        "page": "https://www.bhphotovideo.com/c/product/1592969-REG/zotac_zt_a30800d_10p_gaming_geforce_rtx_3080.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "MSI Ventus 3X",
+        "page": "https://www.bhphotovideo.com/c/product/1593646-REG/msi_geforce_rtx_3080_ventus.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "MSI Gaming X TRIO",
+        "page": "https://www.bhphotovideo.com/c/product/1593645-REG/msi_geforce_rtx_3080_gaming.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "GIGABYTE 3080 EAGLE",
+        "page": "https://www.bhphotovideo.com/c/product/1593332-REG/gigabyte_gv_n3080eagle_oc_10gd_geforce_rtx_3080_eagle.html",
+        "active": true
+      }
+    },
+    {
+      "bnh": {
+        "product": "GIGABYTE 3080 GAMING OC",
+        "page": "https://www.bhphotovideo.com/c/product/1593333-REG/gigabyte_gv_n3080gaming_oc_10gd_geforce_rtx_3080_gaming.html",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "EVGA 3080 FTW3 ULTRA",
+        "page": "https://www.amazon.com/gp/product/B08HR3Y5GQ",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "ZOTAC 3080 Trinity",
+        "page": "https://www.amazon.com/ZOTAC-Graphics-IceStorm-Advanced-ZT-A30800D-10P/dp/B08HJNKT3P",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "ZOTAC 3080 Trinity OC",
+        "page": "https://www.amazon.com/ZOTAC-Graphics-IceStorm-Advanced-ZT-A30800D-10P/dp/B08HVV2P4Z",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "ASUS TUF 3080 OC",
+        "page": "https://www.amazon.com/ASUS-Graphics-DisplayPort-Military-Grade-Certification/dp/B08HH5WF97",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "ASUS TUF 3080",
+        "page": "https://www.amazon.com/ASUS-Graphics-DisplayPort-Military-Grade-Certification/dp/B08HHDP9DW",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "PNY 3080 Gaming Epic-X",
+        "page": "https://www.amazon.com/PNY-GeForce-Gaming-Epic-X-Graphics/dp/B08HBR7QBM",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "PNY 3080 Gaming Epic-X Triple Fan",
+        "page": "https://www.amazon.com/PNY-GeForce-Gaming-Epic-X-Graphics/dp/B08HBTJMLJ",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "MSI 3080 Torx",
+        "page": "https://www.amazon.com/MSI-GeForce-RTX-3080-10G/dp/B08HR5SXPS",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "MSI 3080 Tri-Frozr",
+        "page": "https://www.amazon.com/MSI-GeForce-RTX-3080-10G/dp/B08HR7SV3M",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "EVGA 3080 FTW3 ULTRA",
+        "page": "https://www.amazon.com/EVGA-10G-P5-3897-KR-GeForce-Technology-Backplate/dp/B08HR3Y5GQ",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "EVGA 3080 FTW3 GAMING",
+        "page": "https://www.amazon.com/EVGA-10G-P5-3895-KR-GeForce-Technology-Backplate/dp/B08HR3DPGW",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "EVGA 3080 XC3 GAMING",
+        "page": "https://www.amazon.com/EVGA-10G-P5-3883-KR-GeForce-Cooling-Backplate/dp/B08HR4RJ3Q",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "EVGA 3080 XC3 BLACK",
+        "page": "https://www.amazon.com/EVGA-10G-P5-3881-KR-GeForce-GAMING-Cooling/dp/B08HR6FMF3",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "GIGABYTE 3080 Gaming OC",
+        "page": "https://www.amazon.com/GIGABYTE-GeForce-Graphics-WINDFORCE-GV-N3080GAMING/dp/B08HJTH61J",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "GIGABYTE 3080 Eagle OC",
+        "page": "https://www.amazon.com/GIGABYTE-GeForce-Graphics-WINDFORCE-GV-N3080EAGLE/dp/B08HJS2JLJ",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "ASUS TUF 3090 Gaming",
+        "page": "https://www.amazon.com/ASUS-Graphics-DisplayPort-Military-Grade-Certification/dp/B08HJLLF7G",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "ASUS TUF 3090 OC",
+        "page": "https://www.amazon.com/ASUS-Graphics-DisplayPort-Military-Grade-Certification/dp/B08HJGNJ81",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "GIGABYTE 3090 Eagle OC",
+        "page": "https://www.amazon.com/GIGABYTE-GeForce-Graphics-WINDFORCE-GV-N3090EAGLE/dp/B08HJPDJTY",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "GIGABYTE RTX 3090 Gaming",
+        "page": "https://www.amazon.com/GIGABYTE-GeForce-Graphics-WINDFORCE-GV-N3090GAMING/dp/B08HJRF2CN",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "MSI 3090 Torx",
+        "page": "https://www.amazon.com/MSI-GeForce-384-Bit-Architecture-Graphics/dp/B08HR9D2JS",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "MSI 3090 Twin-Frozr",
+        "page": "https://www.amazon.com/MSI-GeForce-RTX-3090-24G/dp/B08HRBW6VB",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "PNY 3090 Epic-X",
+        "page": "https://www.amazon.com/PNY-GeForce-RTX-3090-Graphics/dp/B08HBVX53D",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "GIGABYTE 3080 Eagle OC",
+        "page": "https://www.amazon.com/PNY-GeForce-Gaming-Epic-X-Graphics/dp/B08HBQWBHH",
+        "active": true
+      }
+    },
+    {
+      "amazon": {
+        "product": "ZOTAC 3090 Trinity",
+        "page": "https://www.amazon.com/ZOTAC-Graphics-IceStorm-Advanced-ZT-A30900D-10P/dp/B08HJQ182D",
+        "active": true
       }
     }
   ]
