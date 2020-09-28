@@ -5,11 +5,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     error::NotifyError,
     scraping::{
-        bestbuy::BestBuyScraper,
-        evga::EvgaScraper,
-        newegg::NeweggScraper,
-        bnh::BnHScraper,
-        ScrapingProvider,
+        amazon::AmazonScraper, bestbuy::BestBuyScraper, bnh::BnHScraper, evga::EvgaScraper,
+        newegg::NeweggScraper, ScrapingProvider,
     },
 };
 
@@ -47,6 +44,7 @@ pub enum Product {
     BestBuy(ProductDetails),
     Nvidia(ProductDetails),
     BnH(ProductDetails),
+    Amazon(ProductDetails),
 }
 
 impl Product {
@@ -56,10 +54,10 @@ impl Product {
             Product::BestBuy(_) => BestBuyScraper.is_available(self).await,
             Product::Evga(Some(_)) => EvgaScraper.is_available(self).await,
             Product::BnH(_) => BnHScraper.is_available(self).await,
+            Product::Amazon(_) => AmazonScraper.is_available(self).await,
             _ => Err(NotifyError::NoProductFound),
         }
     }
-
 
     fn run_command(&self, command: &str, args: &[&str]) -> Result<(), NotifyError> {
         // Run the explorer command with the URL as the param
@@ -103,6 +101,7 @@ impl Product {
             | Product::NewEgg(Some(ProductDetails { page, .. }))
             | Product::BestBuy(ProductDetails { page, .. })
             | Product::BnH(ProductDetails { page, .. })
+            | Product::Amazon(ProductDetails { page, .. })
             | Product::Nvidia(ProductDetails { page, .. }) => Ok(page),
             _ => Err(NotifyError::NoPage),
         }
@@ -112,12 +111,26 @@ impl Product {
     pub fn get_css_selector(&self) -> Result<&str, NotifyError> {
         // Get a reference to the page property of each product.rs type
         match self {
-            Product::Evga(Some(ProductDetails { css_selector: Some(css_selector), .. }))
-            | Product::NewEgg(Some(ProductDetails { css_selector: Some(css_selector), .. }))
-            | Product::BnH(ProductDetails { css_selector: Some(css_selector), .. })
-            | Product::BestBuy(ProductDetails { css_selector: Some(css_selector), .. }) => {
-                Ok(css_selector.as_str())
-            }
+            Product::Evga(Some(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            }))
+            | Product::NewEgg(Some(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            }))
+            | Product::BnH(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            })
+            | Product::Amazon(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            })
+            | Product::BestBuy(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            }) => Ok(css_selector.as_str()),
             _ => Err(NotifyError::NoneCSSSelector),
         }
     }
@@ -131,6 +144,7 @@ impl Product {
             Nvidia(_) => "nvidia",
             BestBuy(_) => "bestbuy",
             BnH(_) => "bnh",
+            Amazon(_) => "amazon",
         }
     }
 
@@ -148,8 +162,15 @@ impl Product {
             ))),
             "evga" => Some(Product::Evga(None)),
             "newegg" => Some(Product::NewEgg(None)),
-            "nvidia" => Some(Product::Nvidia(ProductDetails::new_from_product_and_page(product, page))),
-            "bnh" => Some(Product::BnH(ProductDetails::new_from_product_and_page(product, page))),
+            "nvidia" => Some(Product::Nvidia(ProductDetails::new_from_product_and_page(
+                product, page,
+            ))),
+            "bnh" => Some(Product::BnH(ProductDetails::new_from_product_and_page(
+                product, page,
+            ))),
+            "amazon" => Some(Product::Amazon(ProductDetails::new_from_product_and_page(
+                product, page,
+            ))),
             _ => None,
         }
     }
@@ -166,8 +187,15 @@ impl Product {
             Product::BestBuy(ProductDetails { product, page, .. }) => {
                 format!("Bestbuy has {} for sale at {}", product, page)
             }
-            Product::Nvidia(ProductDetails { product, page, .. }) => format!("Nvidia has {} for sale at {}", product, page),
-            Product::BnH(ProductDetails { product, page, .. }) => format!("BnH has {} for sale at {}", product, page),
+            Product::Nvidia(ProductDetails { product, page, .. }) => {
+                format!("Nvidia has {} for sale at {}", product, page)
+            }
+            Product::BnH(ProductDetails { product, page, .. }) => {
+                format!("BnH has {} for sale at {}", product, page)
+            }
+            Product::Amazon(ProductDetails { product, page, .. }) => {
+                format!("Amazon has {} for sale at {}", product, page)
+            }
             Product::Evga(None) => "EVGA has new products!".to_string(),
             Product::NewEgg(None) => "NewEgg has new products!".to_string(),
         }
