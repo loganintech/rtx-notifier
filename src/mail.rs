@@ -3,8 +3,8 @@ use std::collections::HashSet;
 use chrono::Local;
 
 use crate::error::NotifyError;
-use crate::Notifier;
 use crate::product::Product;
+use crate::Notifier;
 
 pub async fn get_providers_from_mail(
     notifier: &mut Notifier,

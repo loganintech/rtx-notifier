@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-use crate::{error::NotifyError, Notifier};
 use crate::product::Product;
 use crate::Subscriber;
+use crate::{error::NotifyError, Notifier};
 
 const CONFIG_FILE_PATH: &str = "./config.json";
 
@@ -64,7 +64,7 @@ impl ApplicationConfig {
         let provider_ratelimited = match &self.ratelimit_keys {
             Some(map) => match map.get(key) {
                 // If the timeout is in the past, we aren't ratelimited
-                 Some(timeout) if timeout < &now => false,
+                Some(timeout) if timeout < &now => false,
                 // If we don't have a timeout, we aren't ratelimited
                 None => false,
                 // If we have a timeout but it's in the future, we're ratelimited
@@ -74,7 +74,8 @@ impl ApplicationConfig {
             _ => false,
         };
         (matches!(self.scraping_timeout, Some(timeout) if timeout < now)
-            || self.scraping_timeout.is_none()) && !provider_ratelimited
+            || self.scraping_timeout.is_none())
+            && !provider_ratelimited
     }
 }
 
@@ -165,6 +166,6 @@ pub async fn write_config(notifier: &mut Notifier) -> Result<(), NotifyError> {
             .map_err(|_| NotifyError::ConfigUpdate)?
             .as_bytes(),
     )
-        .await
-        .map_err(|_| NotifyError::ConfigUpdate)
+    .await
+    .map_err(|_| NotifyError::ConfigUpdate)
 }

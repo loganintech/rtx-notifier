@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{NotifyError, product::Product};
+use crate::{product::Product, NotifyError};
 
 pub async fn send_webhook(product: &Product, url: &str) -> Result<(), NotifyError> {
     let message = product.new_stock_message();

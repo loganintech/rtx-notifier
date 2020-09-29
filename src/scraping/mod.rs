@@ -4,8 +4,8 @@ use async_trait::async_trait;
 use chrono::{Duration, Local};
 
 use crate::error::NotifyError;
-use crate::Notifier;
 use crate::product::Product;
+use crate::Notifier;
 
 pub mod amazon;
 pub mod bestbuy;
@@ -19,7 +19,9 @@ pub trait ScrapingProvider<'a> {
     async fn get_request(&'a self, product: &'a Product) -> Result<reqwest::Response, NotifyError> {
         // Create a new client, can't use the reqwest::get() because we need headers
         let client = reqwest::ClientBuilder::new()
-            .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0")
+            .user_agent(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0",
+            )
             .gzip(true)
             .build()
             .map_err(|_| NotifyError::ClientBuild)?;
@@ -46,7 +48,7 @@ pub trait ScrapingProvider<'a> {
         //https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
         if status.as_u16() == 429
             || (product.to_key() == "bnh"
-            && resp.url().as_str() == "https://site-not-available.bhphotovideo.com/500Error")
+                && resp.url().as_str() == "https://site-not-available.bhphotovideo.com/500Error")
         {
             return Err(NotifyError::RateLimit);
         }
@@ -89,7 +91,10 @@ pub async fn get_providers_from_scraping(
         let product = active_products[i];
         match res {
             Ok(res) => {
-                checked.entry(product.to_key()).and_modify(|count| { *count += 1 }).or_insert(1);
+                checked
+                    .entry(product.to_key())
+                    .and_modify(|count| *count += 1)
+                    .or_insert(1);
                 if !providers.insert(res) {
                     eprintln!("Duplicate provider found.");
                 }
@@ -97,16 +102,31 @@ pub async fn get_providers_from_scraping(
             Err(NotifyError::RateLimit) => {
                 println!("Rate Limiting Hit: {:?}", product);
                 if notifier.config.application_config.ratelimit_keys.is_some() {
-                    notifier.config.application_config.ratelimit_keys.as_mut().unwrap().insert(product.to_key().to_string(), Local::now() + Duration::minutes(2));
+                    notifier
+                        .config
+                        .application_config
+                        .ratelimit_keys
+                        .as_mut()
+                        .unwrap()
+                        .insert(
+                            product.to_key().to_string(),
+                            Local::now() + Duration::minutes(2),
+                        );
                 } else {
                     let mut map = std::collections::HashMap::new();
-                    map.insert(product.to_key().to_string(), Local::now() + Duration::minutes(2));
+                    map.insert(
+                        product.to_key().to_string(),
+                        Local::now() + Duration::minutes(2),
+                    );
                     notifier.config.application_config.ratelimit_keys = Some(map);
                 }
             }
             Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
             Err(NotifyError::NoProductFound) => {
-                checked.entry(product.to_key()).and_modify(|count| { *count += 1 }).or_insert(1);
+                checked
+                    .entry(product.to_key())
+                    .and_modify(|count| *count += 1)
+                    .or_insert(1);
             }
             Err(e) => eprintln!(
                 "==========\nError Happened: {}\n====\nWith Product: {:?}\n==========",

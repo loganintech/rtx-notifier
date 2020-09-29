@@ -1,6 +1,6 @@
 use twilio::OutboundMessage;
 
-use crate::{NotifyError, product::Product, Subscriber};
+use crate::{product::Product, NotifyError, Subscriber};
 
 pub async fn send_twilio_message(
     product: &Product,
