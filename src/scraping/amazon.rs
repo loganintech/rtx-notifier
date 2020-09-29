@@ -12,7 +12,6 @@ lazy_static! {
     // See if it's offering us a sale on another seller
     static ref OTHER_SELLER_REGEX: Regex =
         RegexBuilder::new("Available from .+these sellers</a>").case_insensitive(true).build().unwrap();
-
 }
 
 static CAPTCHA_TEXT: &str = r#"<p class="a-last">Sorry, we just need to make sure you're not a robot. For best results, please make sure your browser is accepting cookies.</p>"#;

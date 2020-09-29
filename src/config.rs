@@ -32,9 +32,11 @@ pub struct ApplicationConfig {
     pub imap_username: Option<String>,
     pub imap_password: Option<String>,
     pub imap_host: Option<String>,
+    pub imap_port: Option<u16>,
     pub from_phone_number: Option<String>,
     pub should_open_browser: bool,
     pub daemon_mode: bool,
+    pub daemon_timeout: Option<u64>,
     pub discord_url: Option<String>,
     pub scraping_timeout: Option<DateTime<Local>>,
     pub ratelimit_keys: Option<HashMap<String, DateTime<Local>>>,
@@ -52,7 +54,7 @@ impl ApplicationConfig {
     }
 
     pub fn has_imap_config(&self) -> bool {
-        self.imap_host.is_some() && self.imap_username.is_some() && self.imap_password.is_some()
+        self.imap_host.is_some() && self.imap_username.is_some() && self.imap_password.is_some() && self.imap_port.is_some()
     }
 
     pub fn should_open_browser(&self) -> bool {
@@ -99,6 +101,7 @@ impl Notifier {
         let imap = if config.application_config.has_imap_config() {
             Some(get_imap(
                 &config.application_config.imap_host.as_ref().unwrap(),
+                config.application_config.imap_port.unwrap(),
                 &config.application_config.imap_username.as_ref().unwrap(),
                 &config.application_config.imap_password.as_ref().unwrap(),
             )?)
@@ -139,6 +142,7 @@ impl Notifier {
 
 pub fn get_imap(
     host: &str,
+    port: u16,
     username: &str,
     password: &str,
 ) -> Result<Session<TlsStream<TcpStream>>, NotifyError> {
@@ -146,7 +150,7 @@ pub fn get_imap(
         .build()
         .map_err(|_| NotifyError::TlsCreation)?;
 
-    let client = imap::connect((host, 993), host, &tls)
+    let client = imap::connect((host, port), host, &tls)
         .map_err(|e| NotifyError::ImapConnection(Box::new(e)))?;
 
     client

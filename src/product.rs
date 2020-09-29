@@ -1,6 +1,6 @@
 use std::process::Command;
 
-use rand::{thread_rng, Rng};
+use rand::{Rng, thread_rng};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -11,11 +11,6 @@ use crate::{
     },
 };
 
-// This is a workaround for Serde because it doesn't support literals as defaults
-#[allow(non_snake_case)]
-const fn TRUE() -> bool {
-    true
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default, Hash)]
 pub struct ProductDetails {
@@ -23,8 +18,8 @@ pub struct ProductDetails {
     pub page: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub css_selector: Option<String>,
-    #[serde(default = "TRUE")]
-    pub active: bool,
+    pub active: Option<bool>,
+    pub active_chance: Option<u8>,
 }
 
 impl ProductDetails {
@@ -110,44 +105,46 @@ impl Product {
 
     pub fn is_active(&self) -> bool {
         // Get a reference to the page property of each product.rs type
-        match self {
-            Product::Evga(Some(ProductDetails { active, .. }))
-            | Product::NewEgg(Some(ProductDetails { active, .. }))
-            | Product::BestBuy(ProductDetails { active, .. })
-            | Product::Nvidia(ProductDetails { active, .. }) => *active,
-            // Some websites have strict rate limiting, this will hopefully prevent that
-            Product::BnH(ProductDetails { active, .. })
-            | Product::Amazon(ProductDetails { active, .. }) => {
-                *active && thread_rng().gen_bool(0.3)
+        let active = match self {
+            Product::Evga(Some(ProductDetails { active: Some(active), .. }))
+            | Product::NewEgg(Some(ProductDetails { active: Some(active), .. }))
+            | Product::BestBuy(ProductDetails { active: Some(active), .. })
+            | Product::Nvidia(ProductDetails { active: Some(active), .. })
+            | Product::BnH(ProductDetails { active: Some(active), .. })
+            | Product::Amazon(ProductDetails { active: Some(active), .. }) => {
+                *active
             }
-            _ => false,
-        }
+            _ => true,
+        };
+
+        let active_chance = match self {
+            Product::Evga(Some(ProductDetails { active_chance: Some(active_chance), .. }))
+            | Product::NewEgg(Some(ProductDetails { active_chance: Some(active_chance), .. }))
+            | Product::BestBuy(ProductDetails { active_chance: Some(active_chance), .. })
+            | Product::Nvidia(ProductDetails { active_chance: Some(active_chance), .. })
+            | Product::BnH(ProductDetails { active_chance: Some(active_chance), .. })
+            | Product::Amazon(ProductDetails { active_chance: Some(active_chance), .. }) => {
+                *active_chance
+            }
+            _ => 10,
+        };
+
+        let chance = (active_chance / 10) as f64;
+        let chance = if chance > 1.0 { 1.0 } else if chance <= 0.0 { 0.0 } else { chance };
+
+        active && thread_rng().gen_bool(chance)
     }
 
     // Get the page from the Product
     pub fn get_css_selector(&self) -> Result<&str, NotifyError> {
         // Get a reference to the page property of each product.rs type
         match self {
-            Product::Evga(Some(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            }))
-            | Product::NewEgg(Some(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            }))
-            | Product::BnH(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            })
-            | Product::Amazon(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            })
-            | Product::BestBuy(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            }) => Ok(css_selector.as_str()),
+            Product::Evga(Some(ProductDetails { css_selector: Some(css_selector), .. }))
+            | Product::NewEgg(Some(ProductDetails { css_selector: Some(css_selector), .. }))
+            | Product::BnH(ProductDetails { css_selector: Some(css_selector), .. })
+            | Product::Amazon(ProductDetails { css_selector: Some(css_selector), .. })
+            | Product::BestBuy(ProductDetails { css_selector: Some(css_selector), .. })
+              => Ok(css_selector.as_str()),
             _ => Err(NotifyError::NoneCSSSelector),
         }
     }

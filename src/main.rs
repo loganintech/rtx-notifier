@@ -92,7 +92,7 @@ async fn main() -> Result<(), NotifyError> {
             }
         };
 
-        let wait_time = 30u64.saturating_sub(runtime as u64);
+        let wait_time = notifier.config.application_config.daemon_timeout.unwrap_or(30).saturating_sub(runtime as u64);
         println!("Took {} seconds, waiting {}s.", runtime, wait_time);
 
         // If we're not in daemon mode, break out of this loop

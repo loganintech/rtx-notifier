@@ -14,6 +14,7 @@
     "imap_username": null, // this is a string ""
     "imap_password": null, // this is a string ""
     "imap_host": null, // this is a string ""
+    "imap_port": 993,
     // These are personal choices. I recommend daemon mode if you're just running locally (it will keep running, and check for new products every 30 secnods)
     "should_open_browser": true,
     "daemon_mode": true,
@@ -33,7 +34,12 @@
         "product": "EVGA 3090 FTW3 GAMING",
         "page": "https://www.evga.com/products/product.aspx?pn=24G-P5-3985-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        // Active and Active Chance work together. Active overrides active_chance. If active is false, it will not scrape
+        // If active is null, it WILL scrape. This is to be considered "no input"
+        // active_chance is a value between 0 and 10. 0 being won't ever scrape, 10 being always scrape
+        // A number outside of the range will constrain to the outer edges of the range
+        "active": true,
+        "active_chance": null
       }
     },
     {
@@ -41,7 +47,8 @@
         "product": "EVGA 3090 FTW3 ULTRA",
         "page": "https://www.evga.com/products/product.aspx?pn=24G-P5-3987-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
@@ -49,7 +56,8 @@
         "product": "EVGA 3090 XC3 BLACK",
         "page": "https://www.evga.com/products/product.aspx?pn=24G-P5-3971-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
@@ -57,7 +65,8 @@
         "product": "EVGA 3090 XC3 GAMING",
         "page": "https://www.evga.com/products/product.aspx?pn=24G-P5-3973-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
@@ -65,7 +74,8 @@
         "product": "EVGA 3090 XC3 ULTRA GAMING",
         "page": "https://www.evga.com/products/product.aspx?pn=24G-P5-3975-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
@@ -73,7 +83,8 @@
         "product": "EVGA RTX 3080 FTW3 Ultra",
         "page": "https://www.evga.com/products/product.aspx?pn=10G-P5-3897-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
@@ -81,7 +92,8 @@
         "product": "EVGA RTX 3080 FTW3 Gaming",
         "page": "https://www.evga.com/products/product.aspx?pn=10G-P5-3895-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
@@ -89,7 +101,8 @@
         "product": "EVGA RTX 3080 XC3 Black",
         "page": "https://www.evga.com/products/product.aspx?pn=10G-P5-3881-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
@@ -97,7 +110,8 @@
         "product": "EVGA RTX 3080 XC3 Gaming",
         "page": "https://www.evga.com/products/product.aspx?pn=10G-P5-3883-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
@@ -105,532 +119,608 @@
         "product": "EVRA 3080 XC3 Ultra",
         "page": "https://www.evga.com/products/product.aspx?pn=10G-P5-3885-KR",
         "css_selector": "#LFrame_pnlOutOfStock",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "EVGA 3080 FTW3 Gaming",
         "page": "https://www.newegg.com/evga-geforce-rtx-3080-10g-p5-3895-kr/p/N82E16814487519",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "ZOTAC GAMING 3080 Trinity OC",
         "page": "https://www.newegg.com/zotac-geforce-rtx-3080-zt-t30800j-10p/p/N82E16814500504",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "MSI 3080 GAMING X TRIO",
         "page": "https://www.newegg.com/msi-geforce-rtx-3080-rtx-3080-gaming-x-trio-10g/p/N82E16814137597",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "GIGABYTE 3080 GAMING",
         "page": "https://www.newegg.com/gigabyte-geforce-rtx-3080-gv-n3080gaming-oc-10gd/p/N82E16814932329",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "GIGABYTE 3080 EAGLE",
         "page": "https://www.newegg.com/gigabyte-geforce-rtx-3080-gv-n3080eagle-oc-10gd/p/N82E16814932330",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "EVGA 3080 XC3 BLACK Gaming",
         "page": "https://www.newegg.com/evga-geforce-rtx-3080-10g-p5-3881-kr/p/N82E16814487522",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "EVGA 3080 XC3 GAMING",
         "page": "https://www.newegg.com/evga-geforce-rtx-3080-10g-p5-3883-kr/p/N82E16814487521",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "MSI 3080 VENTUS 3X",
         "page": "https://www.newegg.com/msi-geforce-rtx-3080-rtx-3080-ventus-3x-10g-oc/p/N82E16814137598",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "ASUS TUF 3080 GAMING",
         "page": "https://www.newegg.com/asus-geforce-rtx-3080-tuf-rtx3080-10g-gaming/p/N82E16814126453",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "ZOTAC GAMING 3080 Trinity",
         "page": "https://www.newegg.com/zotac-geforce-rtx-3080-zt-a30800d-10p/p/N82E16814500502",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "PNY 3080 Gaming Epic-X",
         "page": "https://www.newegg.com/pny-geforce-rtx-3080-vcg308010tfxppb/p/N82E16814133809",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "MSI 3080 Ventus 3X",
         "page": "https://www.newegg.com/msi-geforce-rtx-3080-rtx-3080-ventus-3x-10g/p/N82E16814137600",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "ZOTAC 3090 Trinity",
         "page": "https://www.newegg.com/zotac-geforce-rtx-3090-zt-a30900d-10p/p/N82E16814500503",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "GIGABYTE 3090 EAGLE",
         "page": "https://www.newegg.com/gigabyte-geforce-rtx-3090-gv-n3090eagle-oc-24gd/p/N82E16814932328",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "ASUS ROG 3090 STRIX",
         "page": "https://www.newegg.com/asus-geforce-rtx-3090-rog-strix-rtx3090-o24g-gaming/p/N82E16814126456",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "EVGA 3090 FTW3 ULTRA",
         "page": "https://www.newegg.com/evga-geforce-rtx-3090-24g-p5-3987-kr/p/N82E16814487526",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "ASUS TUF 3090 GAMING",
         "page": "https://www.newegg.com/asus-geforce-rtx-3090-tuf-rtx3090-o24g-gaming/p/N82E16814126454",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "EVGA 3090 XC3 BLACK",
         "page": "https://www.newegg.com/evga-geforce-rtx-3090-24g-p5-3971-kr/p/N82E16814487527",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "EVGA 3090 XC3 GAMING",
         "page": "https://www.newegg.com/evga-geforce-rtx-3090-24g-p5-3973-kr/p/N82E16814487523",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "MSI 3090 VENTUS 3X",
         "page": "https://www.newegg.com/msi-geforce-rtx-3090-rtx-3090-ventus-3x-24g-oc/p/N82E16814137596",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "MSI 3090 VENTUS 3X",
         "page": "https://www.newegg.com/msi-geforce-rtx-3090-rtx-3090-ventus-3x-24g/p/N82E16814137599",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "EVGA 3090 FTW3 GAMING",
         "page": "https://www.newegg.com/evga-geforce-rtx-3090-24g-p5-3985-kr/p/N82E16814487525",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "GIGABYTE 3090",
         "page": "https://www.newegg.com/gigabyte-geforce-rtx-3090-gv-n3090gaming-oc-24gd/p/N82E16814932327",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "MSI 3090 GAMING X TRIO",
         "page": "https://www.newegg.com/msi-geforce-rtx-3090-rtx-3090-gaming-x-trio-24g/p/N82E16814137595",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "EVGA 3090 XC3 ULTRA",
         "page": "https://www.newegg.com/evga-geforce-rtx-3090-24g-p5-3975-kr/p/N82E16814487524",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "newegg": {
         "product": "ASUS TUF 3090 GAMING",
         "page": "https://www.newegg.com/asus-geforce-rtx-3090-tuf-rtx3090-24g-gaming/p/N82E16814126455",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bestbuy": {
         "product": "PNY 3080 EPIC-X",
         "page": "https://www.bestbuy.com/site/pny-geforce-rtx-3080-10gb-xlr8-gaming-epic-x-rgb-triple-fan-graphics-card/6432658.p?skuId=6432658",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bestbuy": {
-        "product": "EVGA 3080 ",
+        "product": "EVGA 3080",
         "page": "https://www.bestbuy.com/site/evga-geforce-rtx-3080-10gb-gddr6x-pci-express-4-0-graphics-card/6432400.p?skuId=6432400",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "bestbuy": {
         "product": "PNY 3090 EPIC-X",
         "page": "https://www.bestbuy.com/site/pny-geforce-rtx-3080-10gb-xlr8-gaming-epic-x-rgb-triple-fan-graphics-card/6432658.p?skuId=6432658",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bestbuy": {
         "product": "PNY 3090 EPIC-X",
         "page": "https://www.bestbuy.com/site/pny-geforce-rtx-3080-10gb-xlr8-gaming-epic-x-rgb-triple-fan-graphics-card/6432658.p?skuId=6432658",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bestbuy": {
         "product": "PNY 3090 EPIC-X",
         "page": "https://www.bestbuy.com/site/pny-geforce-rtx-3080-10gb-xlr8-gaming-epic-x-rgb-triple-fan-graphics-card/6432658.p?skuId=6432658",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bestbuy": {
         "product": "PNY 3090 EPIC-X",
         "page": "https://www.bestbuy.com/site/pny-geforce-rtx-3080-10gb-xlr8-gaming-epic-x-rgb-triple-fan-graphics-card/6432658.p?skuId=6432658",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bestbuy": {
         "product": "PNY 3090 EPIC-X",
         "page": "https://www.bestbuy.com/site/pny-geforce-rtx-3080-10gb-xlr8-gaming-epic-x-rgb-triple-fan-graphics-card/6432658.p?skuId=6432658",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bestbuy": {
         "product": "PNY 3090 EPIC-X",
         "page": "https://www.bestbuy.com/site/pny-geforce-rtx-3080-10gb-xlr8-gaming-epic-x-rgb-triple-fan-graphics-card/6432658.p?skuId=6432658",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bestbuy": {
         "product": "PNY 3090 EPIC-X",
         "page": "https://www.bestbuy.com/site/pny-geforce-rtx-3080-10gb-xlr8-gaming-epic-x-rgb-triple-fan-graphics-card/6432658.p?skuId=6432658",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "nvidia": {
         "product": "NVIDIA FE 3080",
         "page": "https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3080",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "nvidia": {
         "product": "NVIDIA FE 3090",
         "page": "https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3080",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "ZOTAC TRINITY 3080",
         "page": "https://www.bhphotovideo.com/c/product/1592969-REG/zotac_zt_a30800d_10p_gaming_geforce_rtx_3080.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "MSI Ventus 3X",
         "page": "https://www.bhphotovideo.com/c/product/1593646-REG/msi_geforce_rtx_3080_ventus.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "MSI Gaming X TRIO",
         "page": "https://www.bhphotovideo.com/c/product/1593645-REG/msi_geforce_rtx_3080_gaming.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "GIGABYTE 3080 EAGLE",
         "page": "https://www.bhphotovideo.com/c/product/1593332-REG/gigabyte_gv_n3080eagle_oc_10gd_geforce_rtx_3080_eagle.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "GIGABYTE 3080 GAMING OC",
         "page": "https://www.bhphotovideo.com/c/product/1593333-REG/gigabyte_gv_n3080gaming_oc_10gd_geforce_rtx_3080_gaming.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "ZOTAC GAMING 3090 Trinity",
         "page": "https://www.bhphotovideo.com/c/product/1592970-REG/zotac_zt_a30900d_10p_gaming_geforce_rtx_3090.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "MSI 3090 GAMING X TRIO",
         "page": "https://www.bhphotovideo.com/c/product/1593647-REG/msi_geforce_rtx_3090_gaming.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "MSI 3090 VENTUS 3X",
         "page": "https://www.bhphotovideo.com/c/product/1593648-REG/msi_geforce_rtx_3090_ventus.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "MSI 3090 GAMING X TRIO Graphic",
         "page": "https://www.bhphotovideo.com/c/product/1593994-REG/msi_g3090gxt24_geforce_rtx_3090_gaming.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "GIGABYTE 3090 EAGLE OC",
         "page": "https://www.bhphotovideo.com/c/product/1593334-REG/gigabyte_gv_n3090eagle_oc_24gd_geforce_rtx_3090_eagle.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "MSI 3090 VENTUS 3X",
         "page": "https://www.bhphotovideo.com/c/product/1593995-REG/msi_g3090v3x24c_geforce_rtx_3090_ventus.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "GIGABYTE 3090 GAMING OC",
         "page": "https://www.bhphotovideo.com/c/product/1593335-REG/gigabyte_gv_n3090gaming_oc_24gd_geforce_rtx3090_gaming_oc.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "ASUS TUF 3090 GAMING OC",
         "page": "https://www.bhphotovideo.com/c/product/1594451-REG/asus_90yv0fd1_m0am00_tuf_gaming_geforce_rtx.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "bnh": {
         "product": "ASUS TUF 3090 GAMING OC Graphic",
         "page": "https://www.bhphotovideo.com/c/product/1594454-REG/asus_90yv0fd0_m0am00_tuf_gaming_geforce_rtx.html",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "EVGA 3080 FTW3 ULTRA",
         "page": "https://www.amazon.com/gp/product/B08HR3Y5GQ",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "ZOTAC 3080 Trinity",
         "page": "https://www.amazon.com/ZOTAC-Graphics-IceStorm-Advanced-ZT-A30800D-10P/dp/B08HJNKT3P",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "ZOTAC 3080 Trinity OC",
         "page": "https://www.amazon.com/ZOTAC-Graphics-IceStorm-Advanced-ZT-A30800D-10P/dp/B08HVV2P4Z",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "ASUS TUF 3080 OC",
         "page": "https://www.amazon.com/ASUS-Graphics-DisplayPort-Military-Grade-Certification/dp/B08HH5WF97",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "ASUS TUF 3080",
         "page": "https://www.amazon.com/ASUS-Graphics-DisplayPort-Military-Grade-Certification/dp/B08HHDP9DW",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "PNY 3080 Gaming Epic-X",
         "page": "https://www.amazon.com/PNY-GeForce-Gaming-Epic-X-Graphics/dp/B08HBR7QBM",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "PNY 3080 Gaming Epic-X Triple Fan",
         "page": "https://www.amazon.com/PNY-GeForce-Gaming-Epic-X-Graphics/dp/B08HBTJMLJ",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "MSI 3080 Torx",
         "page": "https://www.amazon.com/MSI-GeForce-RTX-3080-10G/dp/B08HR5SXPS",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "MSI 3080 Tri-Frozr",
         "page": "https://www.amazon.com/MSI-GeForce-RTX-3080-10G/dp/B08HR7SV3M",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "EVGA 3080 FTW3 ULTRA",
         "page": "https://www.amazon.com/EVGA-10G-P5-3897-KR-GeForce-Technology-Backplate/dp/B08HR3Y5GQ",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "EVGA 3080 FTW3 GAMING",
         "page": "https://www.amazon.com/EVGA-10G-P5-3895-KR-GeForce-Technology-Backplate/dp/B08HR3DPGW",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "EVGA 3080 XC3 GAMING",
         "page": "https://www.amazon.com/EVGA-10G-P5-3883-KR-GeForce-Cooling-Backplate/dp/B08HR4RJ3Q",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "EVGA 3080 XC3 BLACK",
         "page": "https://www.amazon.com/EVGA-10G-P5-3881-KR-GeForce-GAMING-Cooling/dp/B08HR6FMF3",
-        "active": true
+        "active": true,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "GIGABYTE 3080 Gaming OC",
         "page": "https://www.amazon.com/GIGABYTE-GeForce-Graphics-WINDFORCE-GV-N3080GAMING/dp/B08HJTH61J",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "GIGABYTE 3080 Eagle OC",
         "page": "https://www.amazon.com/GIGABYTE-GeForce-Graphics-WINDFORCE-GV-N3080EAGLE/dp/B08HJS2JLJ",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "ASUS TUF 3090 Gaming",
         "page": "https://www.amazon.com/ASUS-Graphics-DisplayPort-Military-Grade-Certification/dp/B08HJLLF7G",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "ASUS TUF 3090 OC",
         "page": "https://www.amazon.com/ASUS-Graphics-DisplayPort-Military-Grade-Certification/dp/B08HJGNJ81",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "GIGABYTE 3090 Eagle OC",
         "page": "https://www.amazon.com/GIGABYTE-GeForce-Graphics-WINDFORCE-GV-N3090EAGLE/dp/B08HJPDJTY",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "GIGABYTE RTX 3090 Gaming",
         "page": "https://www.amazon.com/GIGABYTE-GeForce-Graphics-WINDFORCE-GV-N3090GAMING/dp/B08HJRF2CN",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "MSI 3090 Torx",
         "page": "https://www.amazon.com/MSI-GeForce-384-Bit-Architecture-Graphics/dp/B08HR9D2JS",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "MSI 3090 Twin-Frozr",
         "page": "https://www.amazon.com/MSI-GeForce-RTX-3090-24G/dp/B08HRBW6VB",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "PNY 3090 Epic-X",
         "page": "https://www.amazon.com/PNY-GeForce-RTX-3090-Graphics/dp/B08HBVX53D",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "GIGABYTE 3080 Eagle OC",
         "page": "https://www.amazon.com/PNY-GeForce-Gaming-Epic-X-Graphics/dp/B08HBQWBHH",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     },
     {
       "amazon": {
         "product": "ZOTAC 3090 Trinity",
         "page": "https://www.amazon.com/ZOTAC-Graphics-IceStorm-Advanced-ZT-A30900D-10P/dp/B08HJQ182D",
-        "active": true
+        "active": false,
+        "active_chance": null
       }
     }
   ]
