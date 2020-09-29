@@ -73,8 +73,8 @@ impl ApplicationConfig {
             // If we don't have a map of ratelimited providers, we're not ratelimited
             _ => false,
         };
-        matches!(self.scraping_timeout, Some(timeout) if timeout < now)
-            || self.scraping_timeout.is_none() || !provider_ratelimited
+        (matches!(self.scraping_timeout, Some(timeout) if timeout < now)
+            || self.scraping_timeout.is_none()) && !provider_ratelimited
     }
 }
 

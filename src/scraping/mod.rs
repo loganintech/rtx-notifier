@@ -1,8 +1,7 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use async_trait::async_trait;
 use chrono::{Duration, Local};
-use reqwest::header::HeaderMap;
 
 use crate::error::NotifyError;
 use crate::Notifier;
@@ -19,20 +18,15 @@ pub mod nvidia;
 pub trait ScrapingProvider<'a> {
     async fn get_request(&'a self, product: &'a Product) -> Result<reqwest::Response, NotifyError> {
         // Create a new client, can't use the reqwest::get() because we need headers
-        let client = reqwest::Client::new();
-        let mut headers = HeaderMap::new();
-        // Add some headers for a user agent, otherwise the host refuses connection
-        headers.insert(
-            "User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0"
-                .parse()
-                .unwrap(),
-        );
+        let client = reqwest::ClientBuilder::new()
+            .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0")
+            .gzip(true)
+            .build()
+            .map_err(|_| NotifyError::ClientBuild)?;
 
         // Load the webpage
         client
             .get(product.get_url()?)
-            .headers(headers)
             .send()
             .await
             .map_err(NotifyError::WebRequestFailed)
@@ -58,11 +52,11 @@ pub trait ScrapingProvider<'a> {
         }
 
         if status.is_server_error() {
-            return Err(NotifyError::ServerError(status));
+            return Err(NotifyError::WebServer(status));
         }
 
         if status.is_client_error() {
-            return Err(NotifyError::ClientError(status));
+            return Err(NotifyError::WebClient(status));
         }
 
         if !status.is_success() {
@@ -89,18 +83,19 @@ pub async fn get_providers_from_scraping(
 
     let joined = futures::future::join_all(futs).await;
 
+    let mut checked = HashMap::new();
     let mut providers = HashSet::new();
     for (i, res) in joined.into_iter().enumerate() {
         let product = active_products[i];
         match res {
             Ok(res) => {
+                checked.entry(product.to_key()).and_modify(|count| { *count += 1 }).or_insert(1);
                 if !providers.insert(res) {
                     eprintln!("Duplicate provider found.");
                 }
             }
             Err(NotifyError::RateLimit) => {
                 println!("Rate Limiting Hit: {:?}", product);
-
                 if notifier.config.application_config.ratelimit_keys.is_some() {
                     notifier.config.application_config.ratelimit_keys.as_mut().unwrap().insert(product.to_key().to_string(), Local::now() + Duration::minutes(2));
                 } else {
@@ -110,13 +105,17 @@ pub async fn get_providers_from_scraping(
                 }
             }
             Err(NotifyError::WebRequestFailed(e)) => eprintln!("{}", e),
-            Err(NotifyError::NoProductFound) => {}
+            Err(NotifyError::NoProductFound) => {
+                checked.entry(product.to_key()).and_modify(|count| { *count += 1 }).or_insert(1);
+            }
             Err(e) => eprintln!(
                 "==========\nError Happened: {}\n====\nWith Product: {:?}\n==========",
                 e, product
             ),
         }
     }
+
+    println!("Sites Checked: {:#?}", checked);
 
     Ok(providers)
 }

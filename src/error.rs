@@ -26,11 +26,12 @@ pub enum NotifyError {
     HTMLParseFailed,
     NoPage,
     RateLimit,
-    ClientError(reqwest::StatusCode),
-    ServerError(reqwest::StatusCode),
+    WebClient(reqwest::StatusCode),
+    WebServer(reqwest::StatusCode),
     BadStatus(reqwest::StatusCode),
-    DecompressionError(std::io::Error),
-    EncodingError(std::string::FromUtf8Error),
+    PageDecompression(std::io::Error),
+    IOEncoding(std::string::FromUtf8Error),
+    ClientBuild,
 
     // OS Command Errors
     CommandErr(std::io::Error),
@@ -57,15 +58,16 @@ impl fmt::Display for NotifyError {
             NotifyError::CommandErr(e) => write!(f, "CommandErr: {}", e),
             NotifyError::CommandResult(e) => write!(f, "CommandResult: {}", e),
             NotifyError::NoPage => write!(f, "NoPage"),
-            NotifyError::ClientError(e) => write!(f, "ClientError: {}", e),
+            NotifyError::WebClient(e) => write!(f, "WebClient: {}", e),
             NotifyError::NoneCSSSelector => write!(f, "NoneCSSSelector"),
             NotifyError::NonePage => write!(f, "NonePage"),
             NotifyError::RateLimit => write!(f, "RateLimit"),
-            NotifyError::ServerError(e) => write!(f, "ServerError: {}", e),
+            NotifyError::WebServer(e) => write!(f, "WebServer: {}", e),
             NotifyError::BadStatus(e) => write!(f, "BadStatus: {}", e),
-            NotifyError::DecompressionError(e) => write!(f, "DecompressionError: {}", e),
+            NotifyError::PageDecompression(e) => write!(f, "PageDecompression: {}", e),
             NotifyError::FileIOError(e) => write!(f, "FileIOError: {}", e),
-            NotifyError::EncodingError(e) => write!(f, "EncodingError: {}", e),
+            NotifyError::IOEncoding(e) => write!(f, "IOEncoding: {}", e),
+            NotifyError::ClientBuild => write!(f, "ClientBuild"),
         }
     }
 }
