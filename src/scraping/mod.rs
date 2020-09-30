@@ -79,13 +79,14 @@ pub async fn get_providers_from_scraping(
         .iter()
         .filter(|p| p.is_active() && notifier.config.application_config.should_scrape(p.to_key()))
         .collect::<Vec<&Product>>();
+
     for product in &active_products {
         futs.push(product.is_available());
     }
 
     let joined = futures::future::join_all(futs).await;
 
-    let mut checked = HashMap::new();
+    let mut checked: HashMap<&str, (usize, Vec<&str>)> = HashMap::new();
     let mut providers = HashSet::new();
     for (i, res) in joined.into_iter().enumerate() {
         let product = active_products[i];
@@ -93,8 +94,8 @@ pub async fn get_providers_from_scraping(
             Ok(res) => {
                 checked
                     .entry(product.to_key())
-                    .and_modify(|count| *count += 1)
-                    .or_insert(1);
+                    .and_modify(|(count, products)| { *count += 1; products.push(product.get_name().unwrap_or("")) })
+                    .or_insert((1, vec![product.get_name().unwrap_or("")]));
                 if !providers.insert(res) {
                     eprintln!("Duplicate provider found.");
                 }
@@ -125,8 +126,8 @@ pub async fn get_providers_from_scraping(
             Err(NotifyError::NoProductFound) => {
                 checked
                     .entry(product.to_key())
-                    .and_modify(|count| *count += 1)
-                    .or_insert(1);
+                    .and_modify(|(count, products)| { *count += 1; products.push(product.get_name().unwrap_or("")) })
+                    .or_insert((1, vec![product.get_name().unwrap_or("")]));
             }
             Err(e) => eprintln!(
                 "==========\nError Happened: {}\n====\nWith Product: {:?}\n==========",
@@ -135,7 +136,11 @@ pub async fn get_providers_from_scraping(
         }
     }
 
-    println!("Sites Checked: {:#?}", checked);
+    println!("Sites Checked:");
+    for (key, (count, list)) in checked.keys().zip(checked.values()) {
+        println!("[{:02}] {}: {:?}", count, key, list);
+    }
+    // println!("Sites Checked: {:#?}", checked);
 
     Ok(providers)
 }

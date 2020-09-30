@@ -144,10 +144,27 @@ impl Product {
             | Product::BnH(ProductDetails { css_selector: Some(css_selector), .. })
             | Product::Amazon(ProductDetails { css_selector: Some(css_selector), .. })
             | Product::BestBuy(ProductDetails { css_selector: Some(css_selector), .. })
+            | Product::Nvidia(ProductDetails {  css_selector: Some(css_selector), .. })
               => Ok(css_selector.as_str()),
             _ => Err(NotifyError::NoneCSSSelector),
         }
     }
+
+    // Get the page from the Product
+    pub fn get_name(&self) -> Result<&str, NotifyError> {
+        // Get a reference to the page property of each product.rs type
+        match self {
+            Product::Evga(Some(ProductDetails { product, .. }))
+            | Product::NewEgg(Some(ProductDetails { product, .. }))
+            | Product::BnH(ProductDetails { product, .. })
+            | Product::Amazon(ProductDetails { product, .. })
+            | Product::BestBuy(ProductDetails { product, .. })
+            | Product::Nvidia(ProductDetails { product, .. })
+            => Ok(product.as_str()),
+            _ => Err(NotifyError::NoneCSSSelector),
+        }
+    }
+
 
     // Get the product.rs key from the type
     pub fn to_key(&self) -> &'static str {
