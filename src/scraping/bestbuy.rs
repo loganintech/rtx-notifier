@@ -18,7 +18,11 @@ pub struct BestBuyScraper;
 
 #[async_trait]
 impl<'a> ScrapingProvider<'a> for BestBuyScraper {
-    async fn get_request(&'a self, product: &'a Product, client: &reqwest::Client) -> Result<reqwest::Response, NotifyError> {
+    async fn get_request(
+        &'a self,
+        product: &'a Product,
+        client: &reqwest::Client,
+    ) -> Result<reqwest::Response, NotifyError> {
         // Create a new client, can't use the reqwest::get() because we need headers
         let mut headers = HeaderMap::new();
         // Add some headers for a user agent, otherwise the host refuses connection

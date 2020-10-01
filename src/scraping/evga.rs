@@ -30,11 +30,11 @@ impl<'a> ScrapingProvider<'a> for EvgaScraper {
 
         if found.is_none()
             || (found.is_some()
-            && !found
-            .unwrap()
-            .inner_html()
-            .to_ascii_lowercase()
-            .contains("out of stock"))
+                && !found
+                    .unwrap()
+                    .inner_html()
+                    .to_ascii_lowercase()
+                    .contains("out of stock"))
         {
             let _ = write_evga_response(resp.as_bytes());
             return Ok(product.clone());
@@ -45,16 +45,15 @@ impl<'a> ScrapingProvider<'a> for EvgaScraper {
 }
 
 #[allow(dead_code)]
-fn write_evga_response<'a, T: Into<&'a [u8]>>(
-    resp: T
-) -> Result<(), NotifyError> {
+fn write_evga_response<'a, T: Into<&'a [u8]>>(resp: T) -> Result<(), NotifyError> {
     let mut file = std::fs::File::create(format!(
         "./evga_log/evga-log-{}.txt",
         chrono::Local::now().to_rfc3339().replace(":", "-"),
     ))
-        .map_err(NotifyError::FileIOError)?;
+    .map_err(NotifyError::FileIOError)?;
 
-    file.write_all(resp.into()).map_err(NotifyError::FileIOError)?;
+    file.write_all(resp.into())
+        .map_err(NotifyError::FileIOError)?;
 
     Ok(())
 }

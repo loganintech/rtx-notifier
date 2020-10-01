@@ -1,8 +1,8 @@
 use std::process::Command;
 
-use rand::{Rng, thread_rng};
-use serde::{Deserialize, Serialize};
 use chrono::{Duration, Local};
+use rand::{thread_rng, Rng};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     error::NotifyError,
@@ -11,7 +11,6 @@ use crate::{
         newegg::NeweggScraper, ScrapingProvider,
     },
 };
-
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Default, Hash)]
 pub struct ProductDetails {
@@ -55,8 +54,6 @@ impl Product {
             _ => Err(NotifyError::NoProductFound),
         }
     }
-
-
 
     fn run_command(&self, command: &str, args: &[&str]) -> Result<(), NotifyError> {
         // Run the explorer command with the URL as the param
@@ -109,31 +106,69 @@ impl Product {
     pub fn is_active(&self) -> bool {
         // Get a reference to the page property of each product.rs type
         let active = match self {
-            Product::Evga(Some(ProductDetails { active: Some(active), .. }))
-            | Product::NewEgg(Some(ProductDetails { active: Some(active), .. }))
-            | Product::BestBuy(ProductDetails { active: Some(active), .. })
-            | Product::Nvidia(ProductDetails { active: Some(active), .. })
-            | Product::BnH(ProductDetails { active: Some(active), .. })
-            | Product::Amazon(ProductDetails { active: Some(active), .. }) => {
-                *active
-            }
+            Product::Evga(Some(ProductDetails {
+                active: Some(active),
+                ..
+            }))
+            | Product::NewEgg(Some(ProductDetails {
+                active: Some(active),
+                ..
+            }))
+            | Product::BestBuy(ProductDetails {
+                active: Some(active),
+                ..
+            })
+            | Product::Nvidia(ProductDetails {
+                active: Some(active),
+                ..
+            })
+            | Product::BnH(ProductDetails {
+                active: Some(active),
+                ..
+            })
+            | Product::Amazon(ProductDetails {
+                active: Some(active),
+                ..
+            }) => *active,
             _ => true,
         };
 
         let active_chance = match self {
-            Product::Evga(Some(ProductDetails { active_chance: Some(active_chance), .. }))
-            | Product::NewEgg(Some(ProductDetails { active_chance: Some(active_chance), .. }))
-            | Product::BestBuy(ProductDetails { active_chance: Some(active_chance), .. })
-            | Product::Nvidia(ProductDetails { active_chance: Some(active_chance), .. })
-            | Product::BnH(ProductDetails { active_chance: Some(active_chance), .. })
-            | Product::Amazon(ProductDetails { active_chance: Some(active_chance), .. }) => {
-                *active_chance
-            }
+            Product::Evga(Some(ProductDetails {
+                active_chance: Some(active_chance),
+                ..
+            }))
+            | Product::NewEgg(Some(ProductDetails {
+                active_chance: Some(active_chance),
+                ..
+            }))
+            | Product::BestBuy(ProductDetails {
+                active_chance: Some(active_chance),
+                ..
+            })
+            | Product::Nvidia(ProductDetails {
+                active_chance: Some(active_chance),
+                ..
+            })
+            | Product::BnH(ProductDetails {
+                active_chance: Some(active_chance),
+                ..
+            })
+            | Product::Amazon(ProductDetails {
+                active_chance: Some(active_chance),
+                ..
+            }) => *active_chance,
             _ => 10,
         };
 
         let chance = (active_chance / 10) as f64;
-        let chance = if chance > 1.0 { 1.0 } else if chance <= 0.0 { 0.0 } else { chance };
+        let chance = if chance > 1.0 {
+            1.0
+        } else if chance <= 0.0 {
+            0.0
+        } else {
+            chance
+        };
 
         active && thread_rng().gen_bool(chance)
     }
@@ -142,13 +177,30 @@ impl Product {
     pub fn get_css_selector(&self) -> Result<&str, NotifyError> {
         // Get a reference to the page property of each product.rs type
         match self {
-            Product::Evga(Some(ProductDetails { css_selector: Some(css_selector), .. }))
-            | Product::NewEgg(Some(ProductDetails { css_selector: Some(css_selector), .. }))
-            | Product::BnH(ProductDetails { css_selector: Some(css_selector), .. })
-            | Product::Amazon(ProductDetails { css_selector: Some(css_selector), .. })
-            | Product::BestBuy(ProductDetails { css_selector: Some(css_selector), .. })
-            | Product::Nvidia(ProductDetails {  css_selector: Some(css_selector), .. })
-              => Ok(css_selector.as_str()),
+            Product::Evga(Some(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            }))
+            | Product::NewEgg(Some(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            }))
+            | Product::BnH(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            })
+            | Product::Amazon(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            })
+            | Product::BestBuy(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            })
+            | Product::Nvidia(ProductDetails {
+                css_selector: Some(css_selector),
+                ..
+            }) => Ok(css_selector.as_str()),
             _ => Err(NotifyError::NoneCSSSelector),
         }
     }
@@ -162,12 +214,10 @@ impl Product {
             | Product::BnH(ProductDetails { product, .. })
             | Product::Amazon(ProductDetails { product, .. })
             | Product::BestBuy(ProductDetails { product, .. })
-            | Product::Nvidia(ProductDetails { product, .. })
-            => Ok(product.as_str()),
+            | Product::Nvidia(ProductDetails { product, .. }) => Ok(product.as_str()),
             _ => Err(NotifyError::NoneCSSSelector),
         }
     }
-
 
     // Get the product.rs key from the type
     pub fn to_key(&self) -> &'static str {

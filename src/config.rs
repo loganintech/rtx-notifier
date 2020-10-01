@@ -55,7 +55,10 @@ impl ApplicationConfig {
     }
 
     pub fn has_imap_config(&self) -> bool {
-        self.imap_host.is_some() && self.imap_username.is_some() && self.imap_password.is_some() && self.imap_port.is_some()
+        self.imap_host.is_some()
+            && self.imap_username.is_some()
+            && self.imap_password.is_some()
+            && self.imap_port.is_some()
     }
 
     pub fn should_open_browser(&self) -> bool {

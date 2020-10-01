@@ -2,7 +2,7 @@
 
 use std::net::TcpStream;
 
-use chrono::{Local, Duration};
+use chrono::{Duration, Local};
 use native_tls::{self, TlsStream};
 use serde::{Deserialize, Serialize};
 
@@ -46,8 +46,7 @@ impl Notifier {
 
     pub fn add_ratelimit(&mut self, product: &Product) {
         if self.config.application_config.ratelimit_keys.is_some() {
-            self
-                .config
+            self.config
                 .application_config
                 .ratelimit_keys
                 .as_mut()
@@ -114,7 +113,12 @@ async fn main() -> Result<(), NotifyError> {
             }
         };
 
-        let wait_time = notifier.config.application_config.daemon_timeout.unwrap_or(30).saturating_sub(runtime as u64);
+        let wait_time = notifier
+            .config
+            .application_config
+            .daemon_timeout
+            .unwrap_or(30)
+            .saturating_sub(runtime as u64);
         println!("Took {} seconds, waiting {}s.", runtime, wait_time);
 
         // If we're not in daemon mode, break out of this loop
