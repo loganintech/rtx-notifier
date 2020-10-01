@@ -102,6 +102,7 @@ Most config items are optional and won't be used if omitted. For example, withou
   },
   "subscribers": [
     {
+      // List of services that the recipient wants a text about
       "service": [
         "newegg",
         "bestbuy",
@@ -109,7 +110,9 @@ Most config items are optional and won't be used if omitted. For example, withou
         "bnh",
         "amazon"
       ],
+      // The phone number to send a text to
       "to_phone_number": "+15556667777",
+      // Whether or not the bot should send a text to that person
       "active": true
     }
   ],

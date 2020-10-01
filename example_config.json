@@ -1,40 +1,64 @@
 {
   "application_config": {
-    // Some default values here, these are really only used for email
+    // Some default values here, these are really only used for email. You don't need to change them
     "last_seen_evga": "2020-09-20T18:52:49.444913-07:00",
     "last_seen_newegg": "2020-09-20T18:51:06.486222-07:00",
     "last_seen_asus": "2020-09-19T18:43:58.644-07:00",
-    // No notifications are sent within 30 minutes of this timestamp, to prevent spam
+
+    // No notifications are sent within 30 minutes of this timestamp, to prevent spam. Only applies to Twilio
     "last_notification_sent": "2020-09-20T14:47:24.571591-07:00",
+
     // If any of these properties are null, the twilio integration is skipped
+    // The auth token from your twilio account
     "twilio_auth_token": null,
-    // this is a string ""
+    // The account id from your twilio account (as a string) ""
     "twilio_account_id": null,
-    // this is a string ""
+    // The from phone number in your twilio account (as a string "+15556667777")
     "from_phone_number": null,
-    // this is a string ""
+
     // If any of these properties are null, no attempt is made to read emails from the IMAP integration
     "imap_username": null,
-    // this is a string ""
     "imap_password": null,
-    // this is a string ""
     "imap_host": null,
-    // this is a string ""
     "imap_port": 993,
-    // These are personal choices. I recommend daemon mode if you're just running locally (it will keep running, and check for new products every 30 secnods)
+
+    // These are personal choices. I recommend daemon mode if you're just running locally (it will keep running, and check for new products at the specified timeout)
     "should_open_browser": true,
     "daemon_mode": true,
-    // Webhook to send to discord
+    "daemon_timeout": 30,
+
+    // Webhook URL to send to discord
     "discord_url": null,
+
     // This delays ALL scraping. It must be set manually
     "scraping_timeout": "2020-09-28T00:49:28.888712-07:00",
-    // This delays certain providers. These are added when a ratelimit is hit for a product
+
+    // This delays certain providers. These are added automatically when a ratelimit is hit for a service
     "ratelimit_keys": {
       "bnh": "2020-09-28T00:49:28.888712-07:00",
       "amazon": "2020-09-28T00:52:28.888712-07:00"
-    }
+    },
+
+    // Optional SOCKS5 Proxy URL
+    "proxy_url": "socks5://127.0.0.1:9050"
   },
   "subscribers": [
+    {
+      // List of services that the recipient wants a text about
+      "service": [
+        "newegg",
+        "bestbuy",
+        "nvidia",
+        "bnh",
+        "amazon"
+      ],
+      // The phone number to send a text to
+      "to_phone_number": "+15556667777",
+      // Whether or not the bot should send a text to that person
+      "active": true
+    }
+  ],
+  "products": [
     {
       "evga": {
         "product": "EVGA 3090 FTW3 GAMING",
