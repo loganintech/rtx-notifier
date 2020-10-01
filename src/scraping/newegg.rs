@@ -24,6 +24,10 @@ impl<'a> ScrapingProvider<'a> for NeweggScraper {
             .await
             .map_err(|_| NotifyError::HTMLParseFailed)?;
 
+        if resp.contains("We apologize for the confusion, but we can't quite tell if you're a person or a script.") {
+            return Err(NotifyError::RateLimit);
+        }
+
         let capture = DETAIL_REGEX.captures_iter(&resp).next();
         // If we found the js tag with the detail URL, act on it
         if let Some(capture) = capture {

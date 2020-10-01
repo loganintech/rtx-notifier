@@ -40,6 +40,7 @@ pub struct ApplicationConfig {
     pub discord_url: Option<String>,
     pub scraping_timeout: Option<DateTime<Local>>,
     pub ratelimit_keys: Option<HashMap<String, DateTime<Local>>>,
+    pub proxy_url: Option<String>,
 }
 
 impl ApplicationConfig {

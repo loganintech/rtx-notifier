@@ -18,6 +18,8 @@ impl<'a> ScrapingProvider<'a> for NvidiaScraper {
             .await
             .map_err(|_| NotifyError::HTMLParseFailed)?;
 
+        println!("Resp: {}", text);
+
         // If we find the out of stock HTML, we didn't find a product
         if text.contains(OUT_OF_STOCK_HTML) {
             return Err(NotifyError::NoProductFound);

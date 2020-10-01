@@ -2,7 +2,7 @@
 
 use std::net::TcpStream;
 
-use chrono::Local;
+use chrono::{Local, Duration};
 use native_tls::{self, TlsStream};
 use serde::{Deserialize, Serialize};
 
@@ -42,6 +42,28 @@ impl Notifier {
 
     pub fn get_from_phone_number(&self) -> Option<&String> {
         self.config.application_config.from_phone_number.as_ref()
+    }
+
+    pub fn add_ratelimit(&mut self, product: &Product) {
+        if self.config.application_config.ratelimit_keys.is_some() {
+            self
+                .config
+                .application_config
+                .ratelimit_keys
+                .as_mut()
+                .unwrap()
+                .insert(
+                    product.to_key().to_string(),
+                    Local::now() + Duration::minutes(2),
+                );
+        } else {
+            let mut map = std::collections::HashMap::new();
+            map.insert(
+                product.to_key().to_string(),
+                Local::now() + Duration::minutes(2),
+            );
+            self.config.application_config.ratelimit_keys = Some(map);
+        }
     }
 
     pub async fn handle_found_product(&mut self, product: &Product) -> Result<(), NotifyError> {

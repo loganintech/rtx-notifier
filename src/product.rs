@@ -2,6 +2,7 @@ use std::process::Command;
 
 use rand::{Rng, thread_rng};
 use serde::{Deserialize, Serialize};
+use chrono::{Duration, Local};
 
 use crate::{
     error::NotifyError,
@@ -44,16 +45,18 @@ pub enum Product {
 }
 
 impl Product {
-    pub async fn is_available(&self) -> Result<Product, NotifyError> {
+    pub async fn is_available(&self, client: &reqwest::Client) -> Result<Product, NotifyError> {
         match self {
-            Product::NewEgg(Some(_)) => NeweggScraper.is_available(self).await,
-            Product::BestBuy(_) => BestBuyScraper.is_available(self).await,
-            Product::Evga(Some(_)) => EvgaScraper.is_available(self).await,
-            Product::BnH(_) => BnHScraper.is_available(self).await,
-            Product::Amazon(_) => AmazonScraper.is_available(self).await,
+            Product::NewEgg(Some(_)) => NeweggScraper.is_available(self, client).await,
+            Product::BestBuy(_) => BestBuyScraper.is_available(self, client).await,
+            Product::Evga(Some(_)) => EvgaScraper.is_available(self, client).await,
+            Product::BnH(_) => BnHScraper.is_available(self, client).await,
+            Product::Amazon(_) => AmazonScraper.is_available(self, client).await,
             _ => Err(NotifyError::NoProductFound),
         }
     }
+
+
 
     fn run_command(&self, command: &str, args: &[&str]) -> Result<(), NotifyError> {
         // Run the explorer command with the URL as the param

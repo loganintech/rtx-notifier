@@ -32,6 +32,7 @@ pub enum NotifyError {
     PageDecompression(std::io::Error),
     IOEncoding(std::string::FromUtf8Error),
     ClientBuild,
+    ProxyNotRunning,
 
     // OS Command Errors
     CommandErr(std::io::Error),
@@ -68,6 +69,7 @@ impl fmt::Display for NotifyError {
             NotifyError::FileIOError(e) => write!(f, "FileIOError: {}", e),
             NotifyError::IOEncoding(e) => write!(f, "IOEncoding: {}", e),
             NotifyError::ClientBuild => write!(f, "ClientBuild"),
+            NotifyError::ProxyNotRunning => write!(f, "ProxyNotRunning"),
         }
     }
 }

@@ -53,7 +53,10 @@ If you want to contribute I welcome merge requests.
     "ratelimit_keys": {
       "bnh": "2020-09-28T00:49:28.888712-07:00",
       "amazon": "2020-09-28T00:52:28.888712-07:00"
-    }
+    },
+
+    // Optional SOCKS5 Proxy URL
+    "proxy_url": "socks5://127.0.0.1:9050"
   },
   // I recommend copying the providers from the `example_config.json`, Otherwise you have a lot of writing to do
   "subscribers": [
