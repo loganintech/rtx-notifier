@@ -23,7 +23,7 @@ impl<'a> ScrapingProvider<'a> for EvgaScraper {
 
         let document = Html::parse_document(&resp);
 
-        let selector = Selector::parse(&product.get_css_selector()?)
+        let selector = Selector::parse("#LFrame_pnlOutOfStock")
             .map_err(|_| NotifyError::HTMLParseFailed)?;
         let mut selected = document.select(&selector);
         let found = selected.next();

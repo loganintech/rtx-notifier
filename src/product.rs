@@ -1,6 +1,5 @@
 use std::process::Command;
 
-use chrono::{Duration, Local};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
@@ -16,8 +15,6 @@ use crate::{
 pub struct ProductDetails {
     pub product: String,
     pub page: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub css_selector: Option<String>,
     pub active: Option<bool>,
     pub active_chance: Option<u8>,
 }
@@ -171,38 +168,6 @@ impl Product {
         };
 
         active && thread_rng().gen_bool(chance)
-    }
-
-    // Get the page from the Product
-    pub fn get_css_selector(&self) -> Result<&str, NotifyError> {
-        // Get a reference to the page property of each product.rs type
-        match self {
-            Product::Evga(Some(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            }))
-            | Product::NewEgg(Some(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            }))
-            | Product::BnH(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            })
-            | Product::Amazon(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            })
-            | Product::BestBuy(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            })
-            | Product::Nvidia(ProductDetails {
-                css_selector: Some(css_selector),
-                ..
-            }) => Ok(css_selector.as_str()),
-            _ => Err(NotifyError::NoneCSSSelector),
-        }
     }
 
     // Get the page from the Product
