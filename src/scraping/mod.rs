@@ -104,6 +104,7 @@ pub async fn get_providers_from_scraping(
 
     let joined = futures::future::join_all(futs).await;
 
+    let mut should_reload_tor = false;
     let mut checked: HashMap<&str, (usize, Vec<String>)> = HashMap::new();
     let mut providers = HashSet::new();
     for (i, res) in joined.into_iter().enumerate() {
@@ -116,6 +117,7 @@ pub async fn get_providers_from_scraping(
                 }
             }
             Err(NotifyError::RateLimit) => {
+                should_reload_tor = true;
                 print_err(product, NotifyError::RateLimit);
                 notifier.add_ratelimit(&product);
             }
@@ -125,10 +127,18 @@ pub async fn get_providers_from_scraping(
         }
     }
 
+    #[cfg(target_os="linux")]
+    if should_reload_tor {
+        if let Err(e) = reload_tor() {
+            eprintln!("Error reloading TOR: {}", e);
+        }
+    }
+
     println!("Sites Checked:");
     for (key, (count, list)) in checked.keys().zip(checked.values()) {
         println!("[{:02}] {}: {:?}", count, key, list);
     }
+
 
     Ok(providers)
 }
@@ -148,4 +158,18 @@ fn modify_checked_map(product: &Product, map: &mut HashMap<&str, (usize, Vec<Str
             products.push(name.clone())
         })
         .or_insert((1, vec![name]));
+}
+
+#[cfg(target_os="linux")]
+fn reload_tor() -> Result<(), NotifyError> {
+    let mut child = std::process::Command::new("service")
+        .args(&["tor", "reload"])
+        .spawn()
+        .map_err(NotifyError::CommandErr)?;
+    let res = child.wait().map_err(NotifyError::CommandErr)?;
+    if res.success() {
+        Ok(())
+    } else {
+        Err(NotifyError::CommandResult(res.code().unwrap_or(0)))
+    }
 }
