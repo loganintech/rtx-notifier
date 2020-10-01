@@ -63,7 +63,6 @@
       "evga": {
         "product": "EVGA 3090 FTW3 GAMING",
         "page": "https://www.evga.com/products/product.aspx?pn=24G-P5-3985-KR",
-        "css_selector": "#LFrame_pnlOutOfStock",
         // Active and Active Chance work together. Active overrides active_chance. If active is false, it will not scrape
         // If active is null, it WILL scrape. This is to be considered "no input"
         // active_chance is a value between 0 and 10. 0 being won't ever scrape, 10 being always scrape
