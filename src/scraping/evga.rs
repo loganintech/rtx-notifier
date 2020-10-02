@@ -11,10 +11,12 @@ lazy_static! {
     // ... empty pages to trigger the bot. So let's ignore them
     static ref EMPTY_PAGE_REGEX: Regex = RegexBuilder::new(r#"<html><head></head><body></body></html>"#)
         .ignore_whitespace(true).case_insensitive(true).build().unwrap();
+
+    static ref ERROR_TITLE_REGEX: Regex = RegexBuilder::new(r#"<title>error</title>"#)
+        .ignore_whitespace(true).case_insensitive(true).build().unwrap();
 }
 
 use crate::{error::NotifyError, product::Product, scraping::ScrapingProvider};
-use std::os::macos::raw::stat;
 
 pub struct EvgaScraper;
 
@@ -34,7 +36,7 @@ impl<'a> ScrapingProvider<'a> for EvgaScraper {
             return Err(NotifyError::NoProductFound);
         }
 
-        if EMPTY_PAGE_REGEX.is_match(resp.as_str()) {
+        if EMPTY_PAGE_REGEX.is_match(resp.as_str()) || ERROR_TITLE_REGEX.is_match(resp.as_str()) {
             return Err(NotifyError::WebServer(status));
         }
 
