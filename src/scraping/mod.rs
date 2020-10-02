@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use crate::error::NotifyError;
 use crate::product::Product;
 use crate::Notifier;
+use futures::TryFutureExt;
 
 pub mod amazon;
 pub mod bestbuy;
@@ -12,6 +13,8 @@ pub mod bnh;
 pub mod evga;
 pub mod newegg;
 pub mod nvidia;
+
+
 
 #[async_trait]
 pub trait ScrapingProvider<'a> {

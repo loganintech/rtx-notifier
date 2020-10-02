@@ -2,7 +2,19 @@ use async_trait::async_trait;
 use scraper::{Html, Selector};
 use std::io::Write;
 
+use lazy_static::lazy_static;
+use regex::{RegexBuilder, Regex};
+
+lazy_static! {
+    // Sometimes EVGA responds with a completely empty page that passes all of the request failure checks
+    // Since it doesn't have the "not in stock" text, it is a false positive. But we don't want to allow these
+    // ... empty pages to trigger the bot. So let's ignore them
+    static ref EMPTY_PAGE_REGEX: Regex = RegexBuilder::new(r#"<html><head></head><body></body></html>"#)
+        .ignore_whitespace(true).case_insensitive(true).build().unwrap();
+}
+
 use crate::{error::NotifyError, product::Product, scraping::ScrapingProvider};
+use std::os::macos::raw::stat;
 
 pub struct EvgaScraper;
 
@@ -13,12 +25,17 @@ impl<'a> ScrapingProvider<'a> for EvgaScraper {
         resp: reqwest::Response,
         product: &'a Product,
     ) -> Result<Product, NotifyError> {
+        let status = resp.status();
         let resp = resp
             .text()
             .await
             .map_err(|_| NotifyError::HTMLParseFailed)?;
         if resp.contains("There has been an error while requesting your page") {
             return Err(NotifyError::NoProductFound);
+        }
+
+        if EMPTY_PAGE_REGEX.is_match(resp.as_str()) {
+            return Err(NotifyError::WebServer(status));
         }
 
         let document = Html::parse_document(&resp);
